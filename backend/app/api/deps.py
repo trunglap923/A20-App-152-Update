@@ -6,6 +6,8 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from app.config import settings
+from app.core.logging import logger
+from app.db.session import get_db
 
 security = HTTPBearer()
 
@@ -24,11 +26,11 @@ async def _get_public_key(kid: str):
 
     supabase_url = settings.SUPABASE_URL
     if not supabase_url:
-        print("[AUTH] ERROR: SUPABASE_URL is not set in environment")
+        logger.error("SUPABASE_URL is not set in environment")
         raise ValueError("SUPABASE_URL chưa được cấu hình trong .env")
 
     jwks_url = f"{supabase_url}/auth/v1/.well-known/jwks.json"
-    print(f"[AUTH] Fetching JWKS from: {jwks_url}")
+    logger.info(f"Fetching JWKS from: {jwks_url}")
 
     try:
         async with httpx.AsyncClient() as client:
@@ -36,7 +38,7 @@ async def _get_public_key(kid: str):
             resp.raise_for_status()
             jwks = resp.json()
     except Exception as e:
-        print(f"[AUTH] ERROR fetching JWKS: {e}")
+        logger.error(f"ERROR fetching JWKS: {e}")
         raise ValueError(f"Không thể kết nối tới Supabase để lấy key: {e}")
 
     for key_data in jwks.get("keys", []):
@@ -44,13 +46,13 @@ async def _get_public_key(kid: str):
             try:
                 public_key = ECAlgorithm.from_jwk(json.dumps(key_data))
                 _jwks_cache[kid] = public_key
-                print(f"[AUTH] Cached public key for kid={kid}")
+                logger.info(f"Cached public key for kid={kid}")
                 return public_key
             except Exception as e:
-                print(f"[AUTH] ERROR parsing JWK: {e}")
-                raise ValueError(f"Lỗi khi xử lý public key: {e}")
+                logger.error(f"ERROR parsing JWK: {e}")
+        raise ValueError(f"Lỗi khi xử lý public key: {e}")
 
-    print(f"[AUTH] ERROR: kid={kid} not found in JWKS")
+    logger.error(f"kid={kid} not found in JWKS")
     raise ValueError(f"Không tìm thấy public key cho kid={kid} trong JWKS")
 
 
@@ -64,7 +66,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         alg = header.get("alg", "ES256")
         
         if not kid:
-            print("[AUTH] ERROR: Token missing 'kid' in header")
+            logger.error("Token missing 'kid' in header")
             raise jwt.InvalidTokenError("Token thiếu kid trong header")
 
         public_key = await _get_public_key(kid)
@@ -79,27 +81,27 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
         user_id: str = payload.get("sub")
         if not user_id:
-            print("[AUTH] ERROR: Token missing 'sub' claim")
+            logger.error("Token missing 'sub' claim")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token không chứa user id")
 
         return UserInfo(id=user_id)
 
     except jwt.ExpiredSignatureError:
-        print("[AUTH] Token expired")
+        logger.warning("Token expired")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token đã hết hạn",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.InvalidTokenError as e:
-        print(f"[AUTH] JWT error: {e}")
+        logger.warning(f"JWT error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Token không hợp lệ: {e}",
             headers={"WWW-Authenticate": "Bearer"},
         )
     except Exception as e:
-        print(f"[AUTH] Unexpected error during auth: {e}")
+        logger.error(f"Unexpected error during auth: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Lỗi xác thực hệ thống: {e}",

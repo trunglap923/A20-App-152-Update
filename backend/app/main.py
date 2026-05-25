@@ -15,25 +15,29 @@ from .config import settings
 # Import tất cả models để SQLAlchemy metadata nhận diện khi create_all()
 from . import models  # noqa: F401 — registers all models with Base.metadata
 
-# Khởi tạo DB (Tạo bảng nếu chưa có)
-# Trong môi trường production, bạn nên dùng Alembic
-from sqlalchemy import text
-try:
-    with engine.connect() as conn:
-        conn.execute(text('CREATE EXTENSION IF NOT EXISTS "pgcrypto"'))
-        conn.execute(text('CREATE EXTENSION IF NOT EXISTS vector'))
-        conn.commit()
-    Base.metadata.create_all(bind=engine)
-    print("✅ [DATABASE] Kết nối thành công và đã khởi tạo metadata.")
-except Exception as e:
-    print(f"❌ [DATABASE] Lỗi kết nối: {e}")
-    print("👉 Ứng dụng vẫn khởi động nhưng các tính năng liên quan đến DB sẽ bị lỗi.")
-    print("👉 Vui lòng kiểm tra DATABASE_URL trong .env hoặc chạy 'docker-compose up -d postgres'")
+from contextlib import asynccontextmanager
+from app.core.logging import logger
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 1. Khởi tạo DB metadata (Đã chuyển sang Alembic, nên bỏ create_all)
+    # 2. Cleanup stale jobs
+    await cleanup_stale_jobs()
+    
+    # 3. Cleanup old live_ dirs
+    import anyio
+    await anyio.to_thread.run_sync(cleanup_old_live_dirs)
+    
+    logger.info("InsightAI Backend is ready.")
+    yield
+    # Shutdown logic (nếu có)
+    logger.info("InsightAI Backend shutting down.")
 
 app = FastAPI(
     title="InsightAI API",
     description="Backend phục vụ trích xuất tri thức thông minh từ PDF, Youtube, và Voice.",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # ----------------- PROMETHEUS METRICS -----------------
@@ -97,7 +101,6 @@ os.makedirs(data_dir, exist_ok=True)
 print(f"[SYSTEM] Static files mounted at: {data_dir}")
 app.mount("/data", StaticFiles(directory=data_dir), name="data")
 
-@app.on_event("startup")
 async def cleanup_stale_jobs():
     """Dọn dẹp triệt để các task bị kẹt do server crash khi đang xử lý."""
     from .db.session import SessionLocal
@@ -127,29 +130,26 @@ async def cleanup_stale_jobs():
         db.close()
         
         
-    # Dọn dẹp thư mục live_ cũ bị bỏ hoang (> 24h) không block I/O
-    def _cleanup_old_live_dirs():
-        import shutil
-        import time
-        import os
-        from .config import settings
-        data_dir = settings.UPLOAD_DIR
-        if os.path.exists(data_dir):
-            now = time.time()
-            for d in os.listdir(data_dir):
-                if d.startswith("live_"):
-                    dir_path = os.path.join(data_dir, d)
-                    if os.path.isdir(dir_path):
-                        try:
-                            # Xóa nếu thư mục tạo quá 24h (86400s)
-                            if now - os.path.getmtime(dir_path) > 86400:
-                                shutil.rmtree(dir_path)
-                                print(f"[CLEANUP] Đã xóa thư mục ghi âm bỏ hoang: {d}")
-                        except Exception as e:
-                            print(f"[CLEANUP-ERROR] Không thể xóa {d}: {e}")
-
-    import anyio
-    await anyio.to_thread.run_sync(_cleanup_old_live_dirs)
+# Dọn dẹp thư mục live_ cũ bị bỏ hoang (> 24h) không block I/O
+def cleanup_old_live_dirs():
+    import shutil
+    import time
+    import os
+    from .config import settings
+    data_dir = settings.UPLOAD_DIR
+    if os.path.exists(data_dir):
+        now = time.time()
+        for d in os.listdir(data_dir):
+            if d.startswith("live_"):
+                dir_path = os.path.join(data_dir, d)
+                if os.path.isdir(dir_path):
+                    try:
+                        # Xóa nếu thư mục tạo quá 24h (86400s)
+                        if now - os.path.getmtime(dir_path) > 86400:
+                            shutil.rmtree(dir_path)
+                            logger.info(f"Đã xóa thư mục ghi âm bỏ hoang: {d}")
+                    except Exception as e:
+                        logger.error(f"Không thể xóa {d}: {e}")
 
 @app.get("/")
 def read_root():
