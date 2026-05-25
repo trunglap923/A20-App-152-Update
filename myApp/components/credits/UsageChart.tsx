@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CreditTransaction } from '@/lib/credits/types'
+import { CreditTransaction } from '@/lib/types'
 import { format, subDays, isSameDay } from 'date-fns'
 import { ArrowUpRight } from 'lucide-react'
 

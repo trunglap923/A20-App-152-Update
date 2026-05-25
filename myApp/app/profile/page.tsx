@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, User, Mail, Phone, Calendar, Save, X, Pencil, Settings, KeyRound, LogOut, Upload, Crown, Coins, TrendingDown, TrendingUp, ArrowUpRight, ArrowDownRight, History } from 'lucide-react'
-import type { CreditsApiResponse, CreditTransaction } from '@/lib/credits/types'
+import type { CreditsApiResponse, CreditTransaction } from '@/lib/types'
 import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabaseClient'
 import { getUserProfile, updateUserProfile, type UserProfile } from '@/lib/supabase/user'
@@ -77,11 +77,11 @@ export default function ProfilePage() {
             schema: 'public',
             table: 'user_credits',
             filter: `user_id=eq.${user.id}`
-          }, (payload) => {
+          }, (payload: any) => {
             console.log('[REALTIME] Received credit update:', payload)
             fetchCredits(user.id)
           })
-          .subscribe((status) => {
+          .subscribe((status: string) => {
             console.log(`[REALTIME] Subscription status for ${channelName}:`, status)
           })
 

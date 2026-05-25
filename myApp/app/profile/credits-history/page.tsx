@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'react-toastify'
-import { CreditTransaction } from '@/lib/credits/types'
+import { CreditTransaction } from '@/lib/types'
 import { UsageChart } from '@/components/credits/UsageChart'
 
 const supabase = createClient()
