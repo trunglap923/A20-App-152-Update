@@ -17,13 +17,24 @@ class UserInfo(BaseModel):
     id: uuid.UUID
     email: str | None = None
 
+import time
+
 # Cache public keys by kid để không phải fetch mỗi request
+# Cấu trúc: { kid: {"key": public_key, "expires_at": float} }
 _jwks_cache: dict = {}
+JWKS_TTL_SECONDS = 86400  # 24 hours
 
 async def _get_public_key(kid: str):
-    """Fetch và cache public key từ Supabase JWKS endpoint theo kid."""
+    """Fetch và cache public key từ Supabase JWKS endpoint theo kid, có TTL."""
+    now = time.time()
+    
     if kid in _jwks_cache:
-        return _jwks_cache[kid]
+        cached_entry = _jwks_cache[kid]
+        if cached_entry["expires_at"] > now:
+            return cached_entry["key"]
+        else:
+            # Hết hạn -> Xóa cache
+            del _jwks_cache[kid]
 
     supabase_url = settings.SUPABASE_URL
     if not supabase_url:
@@ -46,8 +57,11 @@ async def _get_public_key(kid: str):
         if key_data.get("kid") == kid:
             try:
                 public_key = ECAlgorithm.from_jwk(json.dumps(key_data))
-                _jwks_cache[kid] = public_key
-                logger.info(f"Cached public key for kid={kid}")
+                _jwks_cache[kid] = {
+                    "key": public_key,
+                    "expires_at": time.time() + JWKS_TTL_SECONDS
+                }
+                logger.info(f"Cached public key for kid={kid} with TTL={JWKS_TTL_SECONDS}s")
                 return public_key
             except Exception as e:
                 logger.error(f"ERROR parsing JWK: {e}")
