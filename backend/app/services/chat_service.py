@@ -298,7 +298,7 @@ class ChatService:
 
     @staticmethod
     async def stream_chat_response(message: str, item_uuid: uuid.UUID, db: Session, current_user_id: uuid.UUID, history_req: list[dict], provider: str, model: str, api_key: str | None, background_tasks):
-        from app.utils.credits import deduct_credits_for_ai
+        from app.services.credit_service import deduct_credits_for_ai
         from app.services.memory_service import update_chat_summary_bg
 
         # 1) Conversational reply

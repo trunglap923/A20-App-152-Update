@@ -43,7 +43,7 @@ async def process_enrichment_task(source_type: str, source_url: str, item_id: st
     
     if user_id_str:
         import math
-        from app.utils.credits import check_user_balance
+        from app.services.credit_service import check_user_balance
         char_count = len(content)
         estimated_credits = max(1, math.ceil((char_count / 20000) * 1.2))
         
@@ -85,7 +85,7 @@ async def process_enrichment_task(source_type: str, source_url: str, item_id: st
                     logger.error(f"[{item_id}] Lỗi xóa file tạm: {e}")
 
     if user_id_str:
-        from app.utils.credits import deduct_total_pipeline_cost
+        from app.services.credit_service import deduct_total_pipeline_cost
         from datetime import datetime, timezone
         deduct_total_pipeline_cost(item_id, user_id_str, datetime.fromtimestamp(pipeline_start_time, tz=timezone.utc), "Tạo bài học & Quiz", title)
 
@@ -118,7 +118,7 @@ async def process_live_recording_task(
 
     if user_id_str:
         import math
-        from app.utils.credits import check_user_balance
+        from app.services.credit_service import check_user_balance
         char_count = len(full_content)
         estimated_credits = max(1, math.ceil((char_count / 20000) * 1.2))
         if not check_user_balance(user_id_str, estimated_credits):
@@ -138,7 +138,7 @@ async def process_live_recording_task(
         session.commit()
 
     if user_id_str:
-        from app.utils.credits import deduct_total_pipeline_cost
+        from app.services.credit_service import deduct_total_pipeline_cost
         from datetime import datetime, timezone
         deduct_total_pipeline_cost(item_id, user_id_str, datetime.fromtimestamp(pipeline_start_time, tz=timezone.utc), "Xử lý Ghi âm trực tiếp", title)
 

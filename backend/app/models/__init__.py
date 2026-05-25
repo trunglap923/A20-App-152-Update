@@ -28,6 +28,9 @@ from app.models.ai_logs import AILog
 from app.models.chat_messages import ChatMessage
 from app.models.chat_summaries import ChatSummary
 
+# --- Payment & Subscription ---
+from app.models.payment import Plan, PaymentTransaction, PaymentWebhook, Subscription
+
 # --- Legacy (sẽ xóa sau khi migration pipeline hoàn tất) ---
 from app.models.items import Item
 from app.models.notes import Note
@@ -42,6 +45,7 @@ __all__ = [
     "LLMCache",
     "AILog",
     "ChatMessage", "ChatSummary",
+    "Plan", "PaymentTransaction", "PaymentWebhook", "Subscription",
     # Legacy (keep during transition)
     "Item", "Note",
 ]

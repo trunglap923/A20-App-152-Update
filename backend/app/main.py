@@ -8,6 +8,7 @@ from .api.routes import items
 from .api.routes import admin
 from .api.routes import chat
 from .api.routes import slides
+from .api.routes import payment
 from .db.base import Base
 from .db.session import engine
 from .config import settings
@@ -91,6 +92,7 @@ app.include_router(items.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(slides.router, prefix="/api")
+app.include_router(payment.router, prefix="/api")
 
 import os
 from fastapi.staticfiles import StaticFiles

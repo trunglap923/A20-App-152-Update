@@ -10,7 +10,7 @@ from app.api.deps import get_current_user, UserInfo
 from app.models.chat_messages import ChatMessage
 from app.services.chat_service import ChatService
 from app.services.tts_service import TTSService
-from app.utils.credits import check_user_balance
+from app.services.credit_service import check_user_balance
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 

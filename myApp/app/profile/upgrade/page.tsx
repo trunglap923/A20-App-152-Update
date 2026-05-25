@@ -187,8 +187,9 @@ function PaymentModal({
     const checkPayment = async () => {
       try {
         setCheckingPayment(true)
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
         const res = await fetch(
-          `/api/payment/status?order_code=${qrData.order_code}`
+          `${apiUrl}/payment/status?order_code=${qrData.order_code}`
         )
 
         const data = await res.json()
@@ -266,9 +267,10 @@ function PaymentModal({
   const handlePayment = async () => {
     try {
       setPaymentState('loading')
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
 
       if (selectedMethod === 'vietqr') {
-        const res = await fetch('/api/payment/vietqr/create', {
+        const res = await fetch(`${apiUrl}/payment/vietqr/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -289,7 +291,7 @@ function PaymentModal({
       }
 
       if (selectedMethod === 'momo') {
-        const res = await fetch('/api/payment/momo/create', {
+        const res = await fetch(`${apiUrl}/payment/momo/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -311,7 +313,7 @@ function PaymentModal({
       }
 
       if (selectedMethod === 'zalopay') {
-        const res = await fetch('/api/payment/zalopay/create', {
+        const res = await fetch(`${apiUrl}/payment/zalopay/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

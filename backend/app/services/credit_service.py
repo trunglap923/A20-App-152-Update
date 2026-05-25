@@ -99,6 +99,76 @@ def usd_to_credits(cost_usd: float) -> int:
         return 0
     return math.ceil(cost_usd / CREDIT_RATE_USD)
 
+def grant_credits(
+    user_id: str,
+    amount_usd: float,
+    description: str,
+    payment_reference: str
+) -> dict:
+    """Grant credits to a user after a successful payment."""
+    try:
+        from app.db.session import engine
+        
+        credits_to_grant = usd_to_credits(amount_usd)
+        now = datetime.now(timezone.utc)
+        
+        with Session(engine) as session:
+            result = session.execute(
+                text("SELECT balance, total_purchased FROM user_credits WHERE user_id = :uid"),
+                {"uid": user_id}
+            ).fetchone()
+
+            if not result:
+                new_balance = credits_to_grant
+                new_purchased = credits_to_grant
+                session.execute(
+                    text("""
+                        INSERT INTO user_credits (user_id, balance, total_purchased, total_used, created_at, updated_at)
+                        VALUES (:uid, :bal, :purchased, 0, :now, :now)
+                    """),
+                    {"uid": user_id, "bal": new_balance, "purchased": new_purchased, "now": now}
+                )
+            else:
+                current_balance = float(result[0])
+                current_purchased = float(result[1])
+                new_balance = current_balance + credits_to_grant
+                new_purchased = current_purchased + credits_to_grant
+                session.execute(
+                    text("""
+                        UPDATE user_credits
+                        SET balance = :bal, total_purchased = :purchased, updated_at = :now
+                        WHERE user_id = :uid
+                    """),
+                    {"uid": user_id, "bal": new_balance, "purchased": new_purchased, "now": now}
+                )
+
+            tx_id = str(uuid.uuid4())
+            session.execute(
+                text("""
+                    INSERT INTO credit_transactions
+                    (id, user_id, amount, balance_after, transaction_type, description,
+                     payment_reference, created_at)
+                    VALUES (:id, :uid, :amount, :balance_after, 'purchase', :desc,
+                            :ref, :now)
+                """),
+                {
+                    "id": tx_id,
+                    "uid": user_id,
+                    "amount": credits_to_grant,
+                    "balance_after": new_balance,
+                    "desc": description,
+                    "ref": payment_reference,
+                    "now": now,
+                }
+            )
+            session.commit()
+            
+        print(f"[CREDITS] Granted {credits_to_grant} credits to user {user_id} (balance={new_balance})")
+        return {"success": True, "credits_granted": credits_to_grant, "new_balance": new_balance}
+    except Exception as e:
+        print(f"[CREDITS] WARNING: Credit grant failed: {e}")
+        return {"success": False, "error": str(e)}
+
 
 def check_user_balance(user_id: str, required_credits: int = 1) -> bool:
     """Check if user has at least `required_credits`."""

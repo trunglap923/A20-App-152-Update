@@ -1054,7 +1054,7 @@ async def generate_slides(
     db: Session = Depends(get_db),
     current_user: UserInfo = Depends(get_current_user),
 ):
-    from app.utils.credits import check_user_balance
+    from app.services.credit_service import check_user_balance
     if not check_user_balance(str(current_user.id), 1):
         raise HTTPException(status_code=402, detail="Bạn đã hết credit, vui lòng nạp thêm.")
 
@@ -1207,7 +1207,7 @@ Ngữ cảnh tài liệu:
             output_tokens = usage.get("output_tokens", 0) or 0
 
             if input_tokens + output_tokens > 0:
-                from app.utils.credits import deduct_credits_for_ai
+                from app.services.credit_service import deduct_credits_for_ai
                 deduct_credits_for_ai(
                     user_id=str(current_user.id),
                     task_type="Slides",
