@@ -12,6 +12,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { createClient } from '@/lib/supabaseClient'
+
+const supabase = createClient()
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -96,7 +99,12 @@ export default function AdminBillingPage() {
   useEffect(() => {
     const fetchBilling = async () => {
       try {
-        const res = await fetch('/api/admin/billing')
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/billing`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
 
         const data = await res.json()
 

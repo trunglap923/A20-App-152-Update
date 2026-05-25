@@ -14,6 +14,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { AuditLogRow } from '@/lib/admin-mock-data'
+import { createClient } from '@/lib/supabaseClient'
+
+const supabase = createClient()
 
 const eventLabels: Record<string, string> = {
   login: 'Đăng nhập',
@@ -36,9 +39,13 @@ export default function AdminAuditPage() {
     const loadRows = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch('/api/admin/audit?limit=500', {
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/audit?limit=500`, {
           method: 'GET',
           cache: 'no-store',
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
         if (!response.ok) {
           throw new Error('Không thể tải nhật ký từ database')

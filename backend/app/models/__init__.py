@@ -33,6 +33,7 @@ from app.models.payment import Plan, PaymentTransaction, PaymentWebhook, Subscri
 
 # --- Admin & Notifications ---
 from app.models.notifications import BroadcastCampaign, UserNotification, Banner
+from app.models.admin import UserFeedback, AuthAuditLog
 
 # --- Legacy (sẽ xóa sau khi migration pipeline hoàn tất) ---
 from app.models.items import Item

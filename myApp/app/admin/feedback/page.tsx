@@ -16,6 +16,8 @@ import { createClient } from '@/lib/supabaseClient'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 
+const supabase = createClient()
+
 type FeedbackRow = {
   id: string
   user_id: string
@@ -67,7 +69,12 @@ export default function AdminFeedbackPage() {
 
   const fetchFeedbacks = async () => {
     try {
-      const res = await fetch('/api/admin/feedback')
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/feedback`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to fetch')
       setFeedbacks(data)
@@ -110,9 +117,15 @@ export default function AdminFeedbackPage() {
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
-      const res = await fetch('/api/admin/feedback', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/feedback`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ id, status: newStatus })
       })
       const data = await res.json()
@@ -130,10 +143,16 @@ export default function AdminFeedbackPage() {
 
     setIsSendingReply(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
       // Gửi in-app notification
-      const res = await fetch('/api/admin/feedback/reply', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/feedback/reply`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           userId: replyingTo.user_id,
           title: `Phản hồi từ Admin về: ${replyingTo.type === 'bug' ? 'Báo lỗi' : replyingTo.type === 'feature' ? 'Góp ý' : 'Đánh giá'} của bạn`,

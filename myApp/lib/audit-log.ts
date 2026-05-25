@@ -69,10 +69,19 @@ export async function logAuthEvent(input: LogAuthEventInput) {
   try {
     const deviceDetail = await getDetailedDeviceInfo()
     const payload = { ...input, device: input.device || deviceDetail }
+    
+    // Get token for auth (using the browser's supabase client)
+    const { createClient } = await import('@/lib/supabaseClient')
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
 
-    await fetch('/api/admin/audit', {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/audit`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
       body: JSON.stringify(payload),
       keepalive: true,
     })
