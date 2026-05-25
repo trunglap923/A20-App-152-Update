@@ -25,8 +25,8 @@ async def receive_audio_chunk(
     Nhận 1 chunk audio (~3 phút), convert sang MP3, transcribe ngay bằng Whisper,
     và lưu kết quả JSON ra đĩa để endpoint finish-audio ghép lại.
     """
-    from app.processors.video.audio_processing import AudioVideoProcessor
-    from app.processors.video.transcription import Transcriber
+    from app.processors.media.audio_processing import AudioVideoProcessor
+    from app.processors.media.transcription import Transcriber
 
     upload_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../data"))
     session_dir = os.path.join(upload_dir, f"live_{session_id}")
@@ -151,7 +151,7 @@ async def finish_audio_session(
     full_content = "\n".join(full_texts)
 
     # 2.5 Ghép audio & Upload lên Supabase
-    from app.processors.video.audio_processing import AudioVideoProcessor
+    from app.processors.media.audio_processing import AudioVideoProcessor
     from app.utils.supabase_storage import upload_file_to_supabase
     
     av_processor = AudioVideoProcessor(session_dir)

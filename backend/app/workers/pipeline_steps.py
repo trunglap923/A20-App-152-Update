@@ -54,7 +54,7 @@ async def step_ingestion(source_type, source_url, item_id, ai_options=None, user
 
 
 async def step_media_enrichment(item_id, segments, title, source_type, source_url=None, ai_options=None, user_id=None, version_label="Phiên bản gốc"):
-    from app.processors.video.audio_processing import AudioVideoProcessor
+    from app.processors.media.audio_processing import AudioVideoProcessor
     from app.processors.chunking.semantic_chunker import SemanticChunker
     from app.core.config import settings
     from app.services.vector_search_service import search_service

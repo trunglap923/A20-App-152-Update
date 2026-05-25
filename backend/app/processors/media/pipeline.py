@@ -1,7 +1,7 @@
 import os
 import uuid
-from app.processors.video.audio_processing import AudioVideoProcessor
-from app.processors.video.transcription import Transcriber
+from app.processors.media.audio_processing import AudioVideoProcessor
+from app.processors.media.transcription import Transcriber
 from app.processors.base import BaseProcessor, ingestion_registry
 
 class VideoProcessor(BaseProcessor):

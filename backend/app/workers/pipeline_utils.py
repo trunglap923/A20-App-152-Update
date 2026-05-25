@@ -69,7 +69,7 @@ def create_extractor(ai_options: Dict[str, Any] | None):
     )
 
 def create_multimodal_analyzer(ai_options: Dict[str, Any] | None):
-    from app.processors.ai.multimodal_analyzer import MultimodalAnalyzer
+    from app.ai.multimodal import MultimodalAnalyzer
     options = normalize_ai_options(ai_options, task="vision")
     print(
         f"[AI-RUNTIME][vision] provider={options['provider']} model={options['model']} "
@@ -82,7 +82,7 @@ def create_multimodal_analyzer(ai_options: Dict[str, Any] | None):
     )
 
 def create_transcriber(ai_options: Dict[str, Any] | None):
-    from app.processors.video.transcription import Transcriber
+    from app.processors.media.transcription import Transcriber
     options = normalize_ai_options(ai_options, task="stt")
     return Transcriber(
         model_name=options["model"] or "whisper-1",
