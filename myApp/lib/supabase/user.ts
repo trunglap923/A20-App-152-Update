@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabaseClient'
-import { isUserAdminEmail } from '@/lib/admin-auth'
+export function isUserAdminEmail(email: string | null | undefined): boolean {
+    if (!email) return false
+    const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS || ''
+    return adminEmails.split(',').map(e => e.trim().toLowerCase()).includes(email.toLowerCase())
+}
 
 const supabase = createClient()
 

@@ -43,7 +43,7 @@ export function UserNotificationBell() {
         const { data: { session } } = await supabase.auth.getSession()
         const token = session?.access_token
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/notifications`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/notifications`, {
           cache: 'no-store',
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
@@ -73,7 +73,7 @@ export function UserNotificationBell() {
     setUnreadCount((prev) => Math.max(0, prev - 1))
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/notifications`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/notifications`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export function UserNotificationBell() {
     setUnreadCount(0)
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/notifications`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/notifications`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

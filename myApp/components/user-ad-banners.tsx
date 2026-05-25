@@ -161,7 +161,7 @@ export function UserAdBanners() {
     async function loadBanners() {
       setErrorMessage('')
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/banners`, { cache: 'no-store' })
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/banners`, { cache: 'no-store' })
         const data = (await res.json()) as BannerApiResponse
         if (!res.ok) {
           throw new Error(data.error || 'Không tải được quảng cáo')

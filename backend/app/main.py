@@ -139,7 +139,7 @@ def cleanup_old_live_dirs():
     import shutil
     import time
     import os
-    from .config import settings
+    from .core.config import settings
     data_dir = settings.UPLOAD_DIR
     if os.path.exists(data_dir):
         now = time.time()
