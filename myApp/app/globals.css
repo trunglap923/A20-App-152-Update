@@ -1,0 +1,291 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(0.985 0.002 240);
+  --foreground: oklch(0.2 0.01 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.01 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.01 250);
+  --primary: oklch(0.55 0.18 250);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.96 0.01 240);
+  --secondary-foreground: oklch(0.25 0.01 250);
+  --muted: oklch(0.95 0.01 240);
+  --muted-foreground: oklch(0.5 0.02 250);
+  --accent: oklch(0.92 0.04 250);
+  --accent-foreground: oklch(0.35 0.08 250);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.99 0 0);
+  --border: oklch(0.91 0.01 240);
+  --input: oklch(0.91 0.01 240);
+  --ring: oklch(0.55 0.18 250);
+  --chart-1: oklch(0.55 0.18 250);
+  --chart-2: oklch(0.65 0.15 180);
+  --chart-3: oklch(0.6 0.12 300);
+  --chart-4: oklch(0.7 0.15 60);
+  --chart-5: oklch(0.55 0.15 30);
+  --radius: 0.75rem;
+  --sidebar: oklch(0.99 0.005 240);
+  --sidebar-foreground: oklch(0.2 0.01 250);
+  --sidebar-primary: oklch(0.55 0.18 250);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.94 0.03 250);
+  --sidebar-accent-foreground: oklch(0.3 0.05 250);
+  --sidebar-border: oklch(0.92 0.01 240);
+  --sidebar-ring: oklch(0.55 0.18 250);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.Toastify__toast-container {
+  width: min(92vw, 360px);
+  padding: 12px;
+}
+
+.app-toast {
+  --toast-progress-color: #3b82f6;
+}
+
+.app-toast {
+  min-height: 0;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 92%, white 8%);
+  color: var(--foreground);
+  box-shadow: 0 10px 24px color-mix(in oklch, black 12%, transparent);
+  padding: 10px 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.app-toast::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: color-mix(in oklch, var(--toast-progress-color) 18%, white);
+}
+
+.app-toast::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--toast-progress-color);
+  transform-origin: left center;
+  animation: toast-progress-shrink 3s linear forwards;
+}
+
+@keyframes toast-progress-shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes aurora-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  33% { transform: translate(5%, 5%) scale(1.05); opacity: 0.5; }
+  66% { transform: translate(-2%, 8%) scale(0.95); opacity: 0.4; }
+}
+
+@keyframes orb-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 30px rgba(37, 99, 235, 0.3); }
+  50% { transform: scale(1.02); box-shadow: 0 0 60px rgba(37, 99, 235, 0.5); }
+  100% { transform: scale(1); box-shadow: 0 0 30px rgba(37, 99, 235, 0.3); }
+}
+
+@keyframes orb-swirl {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes rotate-3d-sphere {
+  0% { transform: rotateY(0deg) rotateX(var(--initial-rx, 0deg)); }
+  100% { transform: rotateY(360deg) rotateX(var(--initial-rx, 0deg)); }
+}
+
+@keyframes listening-vortex {
+  0% { transform: rotateY(0deg) scale(1); filter: brightness(1); }
+  50% { transform: rotateY(180deg) scale(1.1); filter: brightness(1.5); }
+  100% { transform: rotateY(360deg) scale(1); filter: brightness(1); }
+}
+
+@keyframes particle-idle {
+  0%, 100% { opacity: var(--base-opacity); }
+  50% { opacity: 0.2; }
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.perspective-2000 {
+  perspective: 2000px;
+}
+
+.app-toast--success {
+  --toast-progress-color: #22c55e;
+  border-color: #34d399;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.app-toast--error {
+  --toast-progress-color: #ef4444;
+  border-color: #f87171;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.app-toast-body {
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.app-toast-progress {
+  height: 3px;
+  transform-origin: left center;
+}
+
+.Toastify__toast-body {
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+}
+
+.Toastify__toast-icon {
+  margin-inline-end: 8px;
+  width: 20px;
+}
+
+.Toastify__close-button {
+  align-self: flex-start;
+}
+.markdown-prose h1 {
+  @apply text-3xl font-extrabold mb-6 mt-8 tracking-tight;
+}
+.markdown-prose h2 {
+  @apply text-2xl font-bold mb-4 mt-7 text-primary border-b border-primary/10 pb-2;
+}
+.markdown-prose h3 {
+  @apply text-xl font-semibold mb-3 mt-5;
+}
+.markdown-prose p {
+  @apply mb-5 text-base leading-relaxed text-foreground/90;
+}
+.markdown-prose ul {
+  @apply list-disc pl-6 mb-6 space-y-3;
+}
+.markdown-prose ol {
+  @apply list-decimal pl-6 mb-6 space-y-3;
+}
+.markdown-prose li {
+  @apply text-base text-foreground/80;
+}
+.markdown-prose strong {
+  @apply font-bold text-primary/90;
+}
+.markdown-prose blockquote {
+  @apply border-l-4 border-primary/30 pl-4 italic my-6 text-muted-foreground bg-primary/5 py-2 rounded-r-lg;
+}
+.markdown-prose code {
+  @apply bg-muted/80 px-1.5 py-0.5 rounded font-mono text-sm border border-border;
+}

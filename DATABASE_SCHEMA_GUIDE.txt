@@ -1,0 +1,532 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║           DATABASE SCHEMA GUIDE - AI Learning Platform                      ║
+║           Hướng dẫn cơ sở dữ liệu cho nền tảng học tập AI                   ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📌 TỔNG QUAN / OVERVIEW
+═══════════════════════════════════════════════════════════════════════════════
+Đây là hệ thống quản lý khóa học trực tuyến với tính năng:
+- Tạo & quản lý khóa học (Courses)
+- Bài học chi tiết (Lessons)
+- Upload & quản lý tài liệu (Documents)
+- Tạo quiz & tracking kết quả (Quizzes, Quiz Attempts, Responses)
+- Sơ đồ tư duy (Mindmaps)
+- Tóm tắt tự động (AI Summaries)
+- Theo dõi tiến độ học (Progress Tracking)
+- Đăng ký khóa học (Enrollments)
+
+Total: 13 bảng dữ liệu
+
+
+🗄️ CHI TIẾT CÁC BẢNG / TABLE DESCRIPTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+1️⃣  COURSES (Khóa Học)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu trữ thông tin về các khóa học
+
+Các trường:
+  • id (UUID)              : Mã định danh duy nhất
+  • title (TEXT)           : Tên khóa học (bắt buộc, không được trống)
+  • description (TEXT)     : Mô tả chi tiết về khóa học
+  • instructor_id (UUID)   : Mã giáo viên/tác giả (FK → auth.users)
+  • category (TEXT)        : Danh mục (ví dụ: programming, data-science, design...)
+  • difficulty (TEXT)      : Mức độ khó (beginner/intermediate/advanced)
+  • cover_image_url (TEXT) : URL hình ảnh bìa khóa học
+  • is_published (BOOLEAN) : Đã xuất bản chưa? (mặc định: false)
+  • search_vector          : Hỗ trợ tìm kiếm full-text
+  • created_at             : Thời gian tạo
+  • updated_at             : Thời gian cập nhật
+
+Ví dụ:
+  INSERT INTO courses VALUES (
+    gen_random_uuid(),
+    'Python Từ Zero Đến Hero',
+    'Khóa học Python toàn diện cho người mới bắt đầu',
+    'user-uuid-123',
+    'programming',
+    'beginner',
+    'https://...',
+    true,
+    now(),
+    now()
+  );
+
+
+2️⃣  LESSONS (Bài Học)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu các bài học thuộc mỗi khóa học
+
+Các trường:
+  • id (UUID)              : Mã bài học
+  • course_id (UUID)       : Mã khóa học (FK → courses)
+  • title (TEXT)           : Tên bài học
+  • content (TEXT)         : Nội dung bài (HTML/Markdown)
+  • order_index (INTEGER)  : Thứ tự bài học trong khóa (bắt buộc > 0)
+  • duration_minutes       : Thời lượng tính bằng phút (mặc định: 30)
+  • search_vector          : Hỗ trợ tìm kiếm
+  • created_at/updated_at  : Thời gian
+
+Quan hệ: Một khóa học (courses) có NHIỀU bài học (lessons)
+         [courses] 1 ←→ N [lessons]
+
+
+3️⃣  DOCUMENTS (Tài Liệu/File Upload)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Quản lý các file người dùng upload
+
+Các trường:
+  • id (UUID)              : Mã tài liệu
+  • user_id (UUID)         : Mã người dùng upload (FK → auth.users)
+  • lesson_id (UUID)       : Bài học liên quan (FK → lessons)
+  • file_name (TEXT)       : Tên file
+  • file_path (TEXT)       : Đường dẫn trong Supabase Storage
+  • file_type (TEXT)       : Loại file (pdf, docx, txt...)
+  • file_size (INTEGER)    : Kích thước file (bytes)
+  • uploaded_at            : Thời gian upload
+
+Ví dụ:
+  INSERT INTO documents VALUES (
+    gen_random_uuid(),
+    'user-uuid-456',
+    'lesson-uuid-789',
+    'Python-Basics.pdf',
+    'documents/user-uuid-456/Python-Basics.pdf',
+    'pdf',
+    1024000,
+    now()
+  );
+
+
+4️⃣  MINDMAPS (Sơ Đồ Tư Duy)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu sơ đồ tư duy của học sinh cho mỗi bài học
+
+Các trường:
+  • id (UUID)              : Mã sơ đồ
+  • lesson_id (UUID)       : Bài học (FK → lessons)
+  • user_id (UUID)         : Người dùng tạo (FK → auth.users)
+  • title (TEXT)           : Tên sơ đồ
+  • content (JSONB)        : Cấu trúc sơ đồ (lưu dưới dạng JSON)
+  • created_at/updated_at  : Thời gian
+
+Mô tả JSONB structure:
+{
+  "nodes": [
+    { "id": "1", "label": "Python", "x": 100, "y": 100 },
+    { "id": "2", "label": "Variables", "x": 200, "y": 100 }
+  ],
+  "edges": [
+    { "source": "1", "target": "2", "label": "basics" }
+  ]
+}
+
+
+5️⃣  QUIZZES (Bài Kiểm Tra)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Tạo các bài quiz để kiểm tra kiến thức
+
+Các trường:
+  • id (UUID)              : Mã quiz
+  • lesson_id (UUID)       : Bài học (FK → lessons)
+  • title (TEXT)           : Tên quiz
+  • description (TEXT)     : Mô tả về quiz
+  • pass_score (INTEGER)   : Điểm đạt (mặc định: 70%)
+  • time_limit_minutes     : Giới hạn thời gian làm quiz (tính bằng phút)
+  • show_answers_after     : Hiện đáp án sau khi hoàn thành? (mặc định: true)
+  • created_at/updated_at  : Thời gian
+
+Ví dụ:
+  INSERT INTO quizzes VALUES (
+    gen_random_uuid(),
+    'lesson-uuid',
+    'Kiểm tra Chương 1',
+    'Quiz về biến và kiểu dữ liệu',
+    70,
+    30,
+    true,
+    now(),
+    now()
+  );
+
+
+6️⃣  QUIZ_QUESTIONS (Câu Hỏi Quiz)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu các câu hỏi trong mỗi quiz
+
+Các trường:
+  • id (UUID)              : Mã câu hỏi
+  • quiz_id (UUID)         : Quiz (FK → quizzes)
+  • question_text (TEXT)   : Nội dung câu hỏi
+  • question_type (TEXT)   : Loại câu hỏi
+                             - 'multiple-choice': Chọn nhiều lựa chọn
+                             - 'true-false': Đúng/Sai
+                             - 'short-answer': Tự luận ngắn
+  • order_index (INTEGER)  : Vị trí câu hỏi
+  • points (INTEGER)       : Số điểm cho câu này (mặc định: 1, phải > 0)
+  • created_at             : Thời gian tạo
+
+Quan hệ: [quizzes] 1 ←→ N [quiz_questions]
+
+
+7️⃣  QUIZ_ANSWERS (Đáp Án)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu các lựa chọn đáp án cho câu hỏi multiple-choice
+
+Các trường:
+  • id (UUID)              : Mã đáp án
+  • question_id (UUID)     : Câu hỏi (FK → quiz_questions)
+  • answer_text (TEXT)     : Nội dung đáp án
+  • is_correct (BOOLEAN)   : Có phải đáp án đúng? (mặc định: false)
+  • order_index (INTEGER)  : Vị trí đáp án (A, B, C, D...)
+  • created_at             : Thời gian tạo
+
+Ví dụ câu hỏi với đáp án:
+  Question: "Python được tạo ra vào năm nào?"
+  Answers:
+    - "1989" (is_correct: true)
+    - "1995" (is_correct: false)
+    - "2001" (is_correct: false)
+    - "2005" (is_correct: false)
+
+Quan hệ: [quiz_questions] 1 ←→ N [quiz_answers]
+
+
+8️⃣  QUIZ_ATTEMPTS (Lần Làm Quiz)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Tracking mỗi lần học sinh làm quiz (có thể làm lại nhiều lần)
+
+Các trường:
+  • id (UUID)              : Mã attempt
+  • quiz_id (UUID)         : Quiz (FK → quizzes)
+  • user_id (UUID)         : Người dùng (FK → auth.users)
+  • attempt_number (INT)   : Lần thứ mấy (1st, 2nd, 3rd...)
+  • score (INTEGER)        : Điểm số (0-100)
+  • passed (BOOLEAN)       : Đạt mục tiêu chưa? (mặc định: false)
+  • started_at             : Bắt đầu làm lúc nào
+  • completed_at           : Hoàn thành lúc nào
+  • UNIQUE (quiz_id, user_id, attempt_number) : Một user chỉ làm 1 lần mỗi attempt
+
+Ví dụ:
+  Học sinh A làm quiz "Chương 1" 3 lần:
+  Attempt 1: score = 65 (không đạt)
+  Attempt 2: score = 72 (đạt)
+  Attempt 3: score = 85 (đạt)
+
+Quan hệ: [quizzes] 1 ←→ N [quiz_attempts]
+         [auth.users] 1 ←→ N [quiz_attempts]
+
+
+9️⃣  QUIZ_RESPONSES (Câu Trả Lời Chi Tiết)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu câu trả lời của học sinh cho TỪNG CÂU HỎI
+
+Các trường:
+  • id (UUID)              : Mã response
+  • attempt_id (UUID)      : Lần làm quiz (FK → quiz_attempts)
+  • question_id (UUID)     : Câu hỏi (FK → quiz_questions)
+  • selected_answer_id     : Đáp án đã chọn (FK → quiz_answers)
+  • user_answer (TEXT)     : Nếu tự luận, câu trả lời văn bản
+  • is_correct (BOOLEAN)   : Trả lời đúng không?
+  • points_earned (INT)    : Điểm kiếm được cho câu này
+  • answered_at            : Lúc trả lời
+
+Ví dụ:
+  Attempt 1 của học sinh A:
+    Question 1 (Python năm nào?):
+      - selected_answer_id: answer-uuid-1 (1989)
+      - is_correct: true
+      - points_earned: 1
+
+    Question 2 (Câu hỏi tự luận):
+      - user_answer: "Biến được sử dụng để lưu trữ dữ liệu"
+      - is_correct: true
+      - points_earned: 5
+
+Quan hệ: [quiz_attempts] 1 ←→ N [quiz_responses]
+
+
+🔟  ENROLLMENTS (Đăng Ký Khóa Học)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Tracking học sinh đăng ký khóa học nào
+
+Các trường:
+  • id (UUID)              : Mã enrollment
+  • user_id (UUID)         : Học sinh (FK → auth.users)
+  • course_id (UUID)       : Khóa học (FK → courses)
+  • enrolled_at            : Ngày đăng ký
+  • completed_at           : Ngày hoàn thành khóa (NULL nếu chưa xong)
+  • progress_percentage    : Tiến độ (0-100%)
+  • UNIQUE (user_id, course_id) : Một học sinh chỉ đăng ký 1 lần mỗi khóa
+
+Ví dụ:
+  Học sinh X đăng ký khóa "Python Từ Zero Đến Hero" - 30% hoàn thành
+  Học sinh X đăng ký khóa "Data Science 101" - 100% hoàn thành
+
+Quan hệ: [auth.users] 1 ←→ N [enrollments]
+         [courses] 1 ←→ N [enrollments]
+
+
+1️⃣1️⃣  LESSON_PROGRESS (Tiến Độ Bài Học)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Tracking tiến độ học sinh cho từng bài học
+
+Các trường:
+  • id (UUID)              : Mã progress
+  • user_id (UUID)         : Học sinh (FK → auth.users)
+  • lesson_id (UUID)       : Bài học (FK → lessons)
+  • completed (BOOLEAN)    : Đã hoàn thành chưa? (mặc định: false)
+  • started_at             : Bắt đầu học lúc nào
+  • completed_at           : Hoàn thành lúc nào
+  • watch_time_seconds     : Thời gian xem (tính bằng giây)
+  • UNIQUE (user_id, lesson_id) : Một học sinh học 1 bài học
+
+Ví dụ:
+  Học sinh Y:
+  - Bài 1: 15 phút xem, hoàn thành
+  - Bài 2: 8 phút xem, chưa hoàn thành
+  - Bài 3: chưa xem
+
+Quan hệ: [auth.users] 1 ←→ N [lesson_progress]
+         [lessons] 1 ←→ N [lesson_progress]
+
+
+1️⃣2️⃣  LESSON_CHUNKS (Chia Nhỏ Bài Học)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Chia bài học dài thành các phần nhỏ để xử lý AI (embeddings, summaries)
+
+Các trường:
+  • id (UUID)              : Mã chunk
+  • lesson_id (UUID)       : Bài học (FK → lessons)
+  • chunk_order (INT)      : Thứ tự chunk
+  • text (TEXT)            : Nội dung phần này
+  • token_count (INT)      : Số token (dùng cho OpenAI/Claude API)
+  • content_hash (VARCHAR) : Hash nội dung (để detect thay đổi)
+  • created_at             : Thời gian tạo
+
+Ví dụ:
+  Bài "Python Basics":
+  Chunk 1: "Python là ngôn ngữ lập trình... token: 250"
+  Chunk 2: "Biến trong Python... token: 180"
+  Chunk 3: "Kiểu dữ liệu... token: 220"
+
+
+1️⃣3️⃣  SUMMARIES (Tóm Tắt Tự Động)
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu tóm tắt được tạo bởi AI cho bài học
+
+Các trường:
+  • id (UUID)              : Mã summary
+  • lesson_id (UUID)       : Bài học (FK → lessons)
+  • user_id (UUID)         : Người tạo (FK → auth.users)
+  • title (TEXT)           : Tiêu đề tóm tắt
+  • content (TEXT)         : Nội dung tóm tắt
+  • source_type (TEXT)     : Nguồn tạo
+                             - 'ai': Tạo bởi AI
+                             - 'manual': Tạo thủ công
+  • model_used (TEXT)      : Model AI dùng (ví dụ: "claude-3-sonnet")
+  • created_at/updated_at  : Thời gian
+
+Ví dụ:
+  Bài "Python Basics":
+  Summary 1: AI tạo bằng Claude - "Python được tạo năm 1989..."
+  Summary 2: Giáo viên tạo thủ công - "Những điểm chính trong bài..."
+
+Quan hệ: [lessons] 1 ←→ N [summaries]
+         [auth.users] 1 ←→ N [summaries]
+
+
+1️⃣4️⃣  USER_PROFILES (Hồ Sơ Người Dùng) - OPTIONAL
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Mở rộng thông tin người dùng từ auth.users
+
+Các trường:
+  • id (UUID)              : Chính là user ID từ auth.users
+  • full_name (TEXT)       : Tên đầy đủ
+  • avatar_url (TEXT)      : URL ảnh đại diện
+  • bio (TEXT)             : Tiểu sử
+  • role (TEXT)            : Vai trò
+                             - 'student': Học sinh
+                             - 'instructor': Giáo viên
+                             - 'admin': Quản trị viên
+  • created_at/updated_at  : Thời gian
+
+LƯU Ý: Nếu bạn muốn mở rộng bảng auth.users trực tiếp thì không cần bảng này
+
+
+1️⃣5️⃣  USER_SETTINGS (Cài Đặt Người Dùng) - OPTIONAL
+───────────────────────────────────────────────────────────────────────────────
+Mục đích: Lưu cài đặt cá nhân của người dùng
+
+Các trường:
+  • id (UUID)              : Mã cài đặt
+  • user_id (UUID)         : Người dùng (FK → auth.users)
+  • theme (TEXT)           : Giao diện: 'light' hoặc 'dark'
+  • notifications_enabled  : Bật thông báo?
+  • language (TEXT)        : Ngôn ngữ ('vi', 'en'...)
+  • receive_course_updates : Nhận cập nhật khóa học?
+  • created_at/updated_at  : Thời gian
+
+
+🔗 QUAN HỆ GIỮA CÁC BẢNG / RELATIONSHIPS
+═══════════════════════════════════════════════════════════════════════════════
+
+auth.users (Supabase Auth)
+├── 1 ←→ N courses (tác giả)
+├── 1 ←→ N documents (người upload)
+├── 1 ←→ N enrollments
+├── 1 ←→ N lesson_progress
+├── 1 ←→ N quiz_attempts
+├── 1 ←→ N mindmaps (người tạo)
+└── 1 ←→ N summaries (người tạo)
+
+courses
+└── 1 ←→ N lessons
+    ├── 1 ←→ N documents
+    ├── 1 ←→ N quizzes
+    │   ├── 1 ←→ N quiz_questions
+    │   │   └── 1 ←→ N quiz_answers
+    │   └── 1 ←→ N quiz_attempts
+    │       ├── 1 ←→ N quiz_responses
+    │       └── points/score calculations
+    ├── 1 ←→ N mindmaps
+    ├── 1 ←→ N summaries
+    ├── 1 ←→ N lesson_chunks
+    └── 1 ←→ N lesson_progress
+
+enrollments
+└── track which users joined which courses
+
+
+📋 FLOW CỬ CHỈ (USER FLOW) EXAMPLES
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Học sinh đăng ký khóa học:
+   ├─ INSERT enrollments (user_id, course_id, progress=0%)
+   └─ UPDATE courses enrollment count
+
+2. Học sinh học bài:
+   ├─ INSERT lesson_progress (user_id, lesson_id)
+   ├─ UPDATE watch_time_seconds
+   └─ WHEN completed: SET completed=true, completed_at=now()
+
+3. Học sinh làm quiz:
+   ├─ INSERT quiz_attempts (quiz_id, user_id, attempt_number=1)
+   ├─ FOR EACH question:
+   │  └─ INSERT quiz_responses (attempt_id, question_id, answer)
+   ├─ CALCULATE score
+   ├─ UPDATE quiz_attempts SET score, passed
+   └─ UPDATE enrollments SET progress_percentage
+
+4. AI tạo tóm tắt:
+   ├─ FETCH lesson_chunks
+   ├─ Call Claude/OpenAI API
+   ├─ INSERT summaries (content=AI_RESPONSE, model_used)
+   └─ RETURN to frontend
+
+
+🔐 ROW LEVEL SECURITY (RLS) POLICIES
+═══════════════════════════════════════════════════════════════════════════════
+Các policy bảo vệ dữ liệu nhạy cảm:
+
+- Documents: Chỉ chủ sở hữu (user_id) xem được
+- Quiz_attempts: Chỉ người làm quiz xem kết quả của mình
+- Lesson_progress: Chỉ chủ sở hữu xem tiến độ của mình
+- Enrollments: Chỉ học sinh view enrollment của mình
+
+
+🚀 HƯỚNG DẪN CÀI ĐẶT / SETUP INSTRUCTIONS
+═══════════════════════════════════════════════════════════════════════════════
+
+BƯỚC 1: Mở Supabase SQL Editor
+- Dashboard → SQL Editor → New query
+- Copy toàn bộ schema SQL và paste
+
+BƯỚC 2: Test kết nối từ app
+- File: lib/supabaseClient.ts
+- Test: queriesDatabase = supabase.from('courses').select()
+
+BƯỚC 3: Tạo Storage Buckets
+- Dashboard → Storage → Create bucket
+- Buckets cần:
+  • documents (for uploads)
+  • course-covers (for course images)
+  • avatars (for user profiles)
+  • mindmap-images (optional)
+
+BƯỚC 4: Bật RLS policies
+- Dashboard → Authentication → Policies
+- Enable RLS cho các bảng nhạy cảm
+
+BƯỚC 5: Tạo functions cho tính năng đặc biệt (Optional)
+- Trigger update progress khi hoàn thành bài
+- Trigger calculate quiz score tự động
+- Trigger update enrollment progress
+
+
+📊 VÍ DỤ QUERY PHỔ BIẾN
+═══════════════════════════════════════════════════════════════════════════════
+
+// Lấy tất cả khóa học mà một học sinh đã đăng ký
+SELECT c.* FROM courses c
+JOIN enrollments e ON c.id = e.course_id
+WHERE e.user_id = 'user-id' AND c.is_published = true;
+
+// Lấy tất cả bài học của một khóa học
+SELECT * FROM lessons
+WHERE course_id = 'course-id'
+ORDER BY order_index ASC;
+
+// Lấy kết quả quiz của một học sinh
+SELECT qa.*, qr.* FROM quiz_attempts qa
+LEFT JOIN quiz_responses qr ON qa.id = qr.attempt_id
+WHERE qa.user_id = 'user-id' AND qa.quiz_id = 'quiz-id';
+
+// Tính tiến độ khóa học
+SELECT COUNT(DISTINCT lp.lesson_id) as completed_lessons,
+       (SELECT COUNT(*) FROM lessons WHERE course_id = 'course-id') as total_lessons
+FROM lesson_progress lp
+WHERE lp.user_id = 'user-id';
+
+// Lấy tóm tắt AI cho một bài học
+SELECT * FROM summaries
+WHERE lesson_id = 'lesson-id' AND source_type = 'ai'
+ORDER BY created_at DESC LIMIT 1;
+
+
+⚠️ LƯU Ý QUAN TRỌNG / IMPORTANT NOTES
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Constraints & Validations:
+   - difficulty: chỉ chấp nhận 'beginner', 'intermediate', 'advanced'
+   - question_type: chỉ chấp nhận 'multiple-choice', 'true-false', 'short-answer'
+   - progress_percentage: phải từ 0-100
+   - score: phải từ 0-100
+   - points: phải > 0
+   - order_index: phải > 0
+
+2. Cascading Deletes:
+   - Xóa course → xóa hết lessons, quizzes, enrollments
+   - Xóa lesson → xóa hết quizzes, documents, progress
+   - Xóa quiz → xóa hết questions, answers, attempts, responses
+
+3. Performance Tips:
+   - Index trên: user_id, course_id, lesson_id (thường query)
+   - Search_vector: hỗ trợ full-text search cho title/content
+
+4. Transactions:
+   - Khi tạo quiz_attempt, PHẢI tạo quiz_responses cho mỗi question
+   - Khi update score, PHẢI validate: score <= 100
+
+5. Data Consistency:
+   - attempt_number phải auto-increment (lần thứ 1, 2, 3...)
+   - UNIQUE constraint trên (quiz_id, user_id, attempt_number)
+
+
+📞 LIÊN HỆ & HỖ TRỢ
+═══════════════════════════════════════════════════════════════════════════════
+File này được tạo để hỗ trợ team hiểu rõ về cấu trúc database.
+Nếu có câu hỏi, vui lòng liên hệ với database architect hoặc review documention.
+
+Generated: 2026-04-12
+Version: 1.0

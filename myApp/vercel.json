@@ -1,0 +1,13 @@
+{
+    "installCommand": "pnpm install --no-frozen-lockfile",
+    "crons": [
+        {
+            "path": "/api/payment/vietqr/expire",
+            "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/api/payment/momo/expired",
+            "schedule": "0 1 * * *"
+        }
+    ]
+}

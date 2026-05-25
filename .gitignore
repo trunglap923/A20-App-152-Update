@@ -1,0 +1,48 @@
+# ==========================================
+# GLOBLAL & OS (Áp dụng cho toàn dự án)
+# ==========================================
+.DS_Store
+.env
+
+# ==========================================
+# BACKEND (Python)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# AI logs — tracked structure, ignored content
+.ai-log/*.jsonl
+
+# ==========================================
+# myApp (Next.js & v0 sandbox)
+# ==========================================
+# Lưu ý: Thay chữ "myApp/" bằng tên thư mục thực tế của bạn nếu bạn đặt tên khác
+myApp/node_modules/
+myApp/.next/
+myApp/out/
+myApp/build/
+myApp/.env*.local
+myApp/.env.local
+
+# v0 sandbox internal files
+myApp/__v0_runtime_loader.js
+myApp/__v0_devtools.tsx
+myApp/__v0_jsx-dev-runtime.ts
+myApp/.snowflake/
+myApp/.v0-trash/
+myApp/.vercel/
+myApp/next.user-config.*
+
+
+backend/chroma_db/
+chroma_db/
+data/
+
+
