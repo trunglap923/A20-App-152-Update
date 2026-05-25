@@ -31,6 +31,9 @@ from app.models.chat_summaries import ChatSummary
 # --- Payment & Subscription ---
 from app.models.payment import Plan, PaymentTransaction, PaymentWebhook, Subscription
 
+# --- Admin & Notifications ---
+from app.models.notifications import BroadcastCampaign, UserNotification, Banner
+
 # --- Legacy (sẽ xóa sau khi migration pipeline hoàn tất) ---
 from app.models.items import Item
 from app.models.notes import Note
@@ -46,6 +49,7 @@ __all__ = [
     "AILog",
     "ChatMessage", "ChatSummary",
     "Plan", "PaymentTransaction", "PaymentWebhook", "Subscription",
+    "BroadcastCampaign", "UserNotification", "Banner",
     # Legacy (keep during transition)
     "Item", "Note",
 ]

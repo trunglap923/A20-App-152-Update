@@ -120,3 +120,83 @@ async def get_ai_monitoring_summary(
         "failed_count": result.failed_count,
         "time_filter": time_filter,
     }
+
+from app.api.middleware.admin_guard import get_admin_user as admin_guard
+
+@router.get("/users")
+async def get_admin_users(
+    db: Session = Depends(get_db),
+    admin: UserInfo = Depends(admin_guard),
+):
+    from app.services.admin_service import admin_service
+    return await admin_service.list_users(db)
+
+@router.patch("/users/{user_id}/ban")
+async def ban_admin_user(
+    user_id: str,
+    payload: dict,
+    admin: UserInfo = Depends(admin_guard),
+):
+    from app.services.admin_service import admin_service
+    is_banned = payload.get("banned", False)
+    return await admin_service.update_user_status(user_id, is_banned)
+
+@router.get("/notifications")
+async def get_notifications(
+    db: Session = Depends(get_db),
+    admin: UserInfo = Depends(admin_guard),
+):
+    from app.services.notification_service import notification_service
+    broadcasts = await notification_service.get_broadcasts(db)
+    banners = await notification_service.get_banners(db)
+    return {
+        "broadcasts": broadcasts,
+        "banners": banners
+    }
+
+@router.post("/notifications/broadcast")
+async def create_broadcast(
+    payload: dict,
+    db: Session = Depends(get_db),
+    admin: UserInfo = Depends(admin_guard),
+):
+    from app.services.notification_service import notification_service
+    return await notification_service.create_broadcast(db, payload)
+
+@router.post("/notifications/banner")
+async def create_banner(
+    payload: dict,
+    db: Session = Depends(get_db),
+    admin: UserInfo = Depends(admin_guard),
+):
+    from app.services.notification_service import notification_service
+    return await notification_service.create_banner(db, payload)
+
+@router.patch("/notifications/banner/{banner_id}/toggle")
+async def toggle_banner(
+    banner_id: str,
+    payload: dict,
+    db: Session = Depends(get_db),
+    admin: UserInfo = Depends(admin_guard),
+):
+    from app.services.notification_service import notification_service
+    enabled = payload.get("enabled", False)
+    return await notification_service.toggle_banner(db, banner_id, enabled)
+
+@router.post("/notifications/preview")
+async def preview_notification(
+    payload: dict,
+    admin: UserInfo = Depends(admin_guard),
+):
+    from app.services.gemini_preview_service import gemini_preview_service
+    notif_type = payload.get("type")
+    
+    if notif_type == "broadcast":
+        preview = await gemini_preview_service.preview_broadcast(payload)
+        return {"preview": preview}
+    elif notif_type == "banner":
+        preview = await gemini_preview_service.preview_banner(payload)
+        return {"preview": preview}
+        
+    raise HTTPException(status_code=400, detail="Loại preview không hợp lệ")
+

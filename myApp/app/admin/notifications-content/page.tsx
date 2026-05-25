@@ -44,6 +44,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'react-toastify'
+import { createClient } from '@/lib/supabaseClient'
+
+const supabase = createClient()
 
 type BroadcastChannel = 'Email' | 'In-app Notification' | 'Push Notification'
 type AudienceGroup =
@@ -313,7 +316,13 @@ export default function AdminNotificationsContentPage() {
     async function loadData(showLoader: boolean) {
       if (showLoader) setIsLoading(true)
       try {
-        const res = await fetch('/api/admin/notifications-content', { cache: 'no-store' })
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications`, {
+          cache: 'no-store',
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
         const data = (await res.json()) as NotificationsApiResponse
         if (!res.ok) {
           throw new Error(data.error || 'Không tải được dữ liệu notifications')
@@ -352,9 +361,15 @@ export default function AdminNotificationsContentPage() {
     setErrorMessage('')
     setIsSubmittingBroadcast(true)
     try {
-      const res = await fetch('/api/admin/notifications-content', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/broadcast`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           type: 'broadcast',
           action: kind === 'now' ? 'send_now' : 'schedule',
@@ -393,9 +408,15 @@ export default function AdminNotificationsContentPage() {
     setErrorMessage('')
     setIsSubmittingBanner(true)
     try {
-      const res = await fetch('/api/admin/notifications-content', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/banner`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           type: 'banner',
           placement,
@@ -428,9 +449,15 @@ export default function AdminNotificationsContentPage() {
     const previous = banners
     setBanners((prev) => prev.map((b) => (b.id === id ? { ...b, enabled } : b)))
     try {
-      const res = await fetch('/api/admin/notifications-content', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/banner/${id}/toggle`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ type: 'banner_toggle', id, enabled }),
       })
       const data = (await res.json()) as { item?: BannerItem; ok?: boolean; error?: string }
@@ -460,9 +487,15 @@ export default function AdminNotificationsContentPage() {
     setIsPreviewingBroadcast(true)
     try {
       const signature = getBroadcastSignature(finalTitle, finalBody)
-      const res = await fetch('/api/admin/notifications-preview', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/preview`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           type: 'broadcast',
           channel,
@@ -497,9 +530,15 @@ export default function AdminNotificationsContentPage() {
     setIsPreviewingBanner(true)
     try {
       const signature = getBannerSignature(finalContent, finalCta, finalLink)
-      const res = await fetch('/api/admin/notifications-preview', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/preview`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           type: 'banner',
           placement,

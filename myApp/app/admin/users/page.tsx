@@ -24,6 +24,9 @@ import {
 import type { AdminUserRow } from '@/lib/admin-mock-data'
 import UserAvatar from '@/components/UserAvatar'
 import EditUserModal from '@/components/admin/EditUserModal'
+import { createClient } from '@/lib/supabaseClient'
+
+const supabase = createClient()
 
 function statusBadge(status: AdminUserRow['status']) {
   switch (status) {
@@ -92,7 +95,12 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch('/api/admin/users')
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
         const data = await res.json()
 
         if (!res.ok) {
@@ -144,10 +152,14 @@ export default function AdminUsersPage() {
     const nextBanned = target.status !== 'suspended'
 
     try {
-      const res = await fetch(`/api/admin/users/${id}/ban`, {
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${id}/ban`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           banned: nextBanned,

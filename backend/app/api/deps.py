@@ -15,6 +15,7 @@ import uuid
 
 class UserInfo(BaseModel):
     id: uuid.UUID
+    email: str | None = None
 
 # Cache public keys by kid để không phải fetch mỗi request
 _jwks_cache: dict = {}
@@ -80,11 +81,12 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         )
 
         user_id: str = payload.get("sub")
+        email: str = payload.get("email")
         if not user_id:
             logger.error("Token missing 'sub' claim")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token không chứa user id")
 
-        return UserInfo(id=user_id)
+        return UserInfo(id=user_id, email=email)
 
     except jwt.ExpiredSignatureError:
         logger.warning("Token expired")
@@ -133,9 +135,10 @@ async def get_current_user_sse(token: str = None, request: Request = None) -> Us
         payload = jwt.decode(raw_token, public_key, algorithms=[alg],
                              options={"verify_aud": False}, leeway=60)
         user_id = payload.get("sub")
+        email = payload.get("email")
         if not user_id:
             raise HTTPException(status_code=401, detail="Token thiếu user id")
-        return UserInfo(id=user_id)
+        return UserInfo(id=user_id, email=email)
 
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token đã hết hạn")

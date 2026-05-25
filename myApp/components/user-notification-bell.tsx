@@ -5,6 +5,9 @@ import { Bell, CheckCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { createClient } from '@/lib/supabaseClient'
+
+const supabase = createClient()
 
 type UserNotification = {
   id: string
@@ -37,7 +40,13 @@ export function UserNotificationBell() {
     async (showLoader: boolean) => {
       if (showLoader) setLoading(true)
       try {
-        const response = await fetch('/api/notifications', { cache: 'no-store' })
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/notifications`, {
+          cache: 'no-store',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
         const data = (await response.json()) as NotificationApiResponse
         if (!response.ok) return
         setItems(data.notifications ?? [])
@@ -62,9 +71,14 @@ export function UserNotificationBell() {
   async function markOneAsRead(id: string) {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, isRead: true } : item)))
     setUnreadCount((prev) => Math.max(0, prev - 1))
-    await fetch('/api/notifications', {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/notifications`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({ id }),
     })
   }
@@ -72,9 +86,14 @@ export function UserNotificationBell() {
   async function markAllAsRead() {
     setItems((prev) => prev.map((item) => ({ ...item, isRead: true })))
     setUnreadCount(0)
-    await fetch('/api/notifications', {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/notifications`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({ markAll: true }),
     })
   }

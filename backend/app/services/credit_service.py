@@ -189,6 +189,53 @@ def check_user_balance(user_id: str, required_credits: int = 1) -> bool:
         print(f"[CREDITS] Error checking balance for {user_id}: {e}")
         return False
 
+def get_user_credits(user_id: str) -> dict:
+    """Get current credit balance, totals, and recent transactions for the user."""
+    try:
+        from app.db.session import engine
+        with Session(engine) as session:
+            result = session.execute(
+                text("SELECT balance, total_purchased, total_used FROM user_credits WHERE user_id = :uid"),
+                {"uid": user_id}
+            ).fetchone()
+
+            if result:
+                balance, total_purchased, total_used = float(result[0]), float(result[1]), float(result[2])
+            else:
+                balance, total_purchased, total_used = 0, 0, 0
+                
+            transactions_rows = session.execute(
+                text("""
+                    SELECT id, amount, balance_after, transaction_type, description, created_at 
+                    FROM credit_transactions 
+                    WHERE user_id = :uid 
+                    ORDER BY created_at DESC LIMIT 20
+                """),
+                {"uid": user_id}
+            ).fetchall()
+
+            transactions = [
+                {
+                    "id": str(r[0]),
+                    "amount": float(r[1]),
+                    "balance_after": float(r[2]),
+                    "transaction_type": r[3],
+                    "description": r[4],
+                    "created_at": r[5].isoformat() if r[5] else None
+                }
+                for r in transactions_rows
+            ]
+
+            return {
+                "balance": balance,
+                "total_purchased": total_purchased,
+                "total_used": total_used,
+                "transactions": transactions
+            }
+    except Exception as e:
+        print(f"[CREDITS] Error getting user credits for {user_id}: {e}")
+        raise e
+
 
 def deduct_credits_by_usd(
     user_id: str,
