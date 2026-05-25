@@ -13,7 +13,7 @@ from app.api.deps import get_current_user, UserInfo
 from app.ai.providers import get_chat_provider
 from app.models.knowledge_items import KnowledgeItem
 from app.models.chunks import ItemChunk
-from app.search.service import search_service
+from app.services.vector_search_service import search_service
 
 
 router = APIRouter(prefix="/slides", tags=["slides"])

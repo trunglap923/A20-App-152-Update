@@ -2,7 +2,7 @@ import re
 import httpx
 from xml.sax.saxutils import escape
 from fastapi import HTTPException
-from app.config import settings
+from app.core.config import settings
 
 AZURE_TTS_PRESETS: dict[str, dict[str, str]] = {
     "auto": {

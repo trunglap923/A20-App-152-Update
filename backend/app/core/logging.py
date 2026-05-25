@@ -2,7 +2,7 @@ import logging
 import sys
 import json
 from datetime import datetime
-from app.config import settings
+from app.core.config import settings
 
 import os
 

@@ -5,7 +5,7 @@ from jwt.algorithms import ECAlgorithm
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from app.config import settings
+from app.core.config import settings
 from app.core.logging import logger
 from app.db.session import get_db
 

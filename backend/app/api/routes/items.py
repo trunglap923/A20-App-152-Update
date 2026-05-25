@@ -17,8 +17,8 @@ from app.workers.enrichment_pipeline import (
     regenerate_quiz_task
 )
 from app.api.deps import get_current_user, UserInfo
-from app.config import settings
-from app.search.service import search_service
+from app.core.config import settings
+from app.services.vector_search_service import search_service
 from app.services.item_service import ItemService
 from app.core.logging import logger
 

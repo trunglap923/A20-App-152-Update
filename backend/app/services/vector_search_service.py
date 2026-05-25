@@ -1,11 +1,11 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.ai.providers import get_embedding_provider
-from app.search.backends.chroma import vector_db
+from app.infrastructure.vector_db.chroma import vector_db
 from app.db.session import engine
 from sqlalchemy.orm import Session
 from app.models.chunks import ItemChunk
 from app.models.embeddings import Embedding
-from app.config import settings
+from app.core.config import settings
 import uuid
 import re
 import asyncio
@@ -16,7 +16,7 @@ from pymilvus import AnnSearchRequest, WeightedRanker
 
 # Milvus: import an toàn, không crash nếu chưa cấu hình
 try:
-    from app.search.backends.milvus_db import milvus_adapter as _milvus
+    from app.infrastructure.vector_db.milvus_db import milvus_adapter as _milvus
     _MILVUS_OK = _milvus.available
 except Exception as _mex:
     _milvus = None  # type: ignore

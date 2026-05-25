@@ -1,6 +1,6 @@
 import chromadb
 from chromadb.config import Settings
-from app.config import settings
+from app.core.config import settings
 
 class VectorDB:
     def __init__(self):

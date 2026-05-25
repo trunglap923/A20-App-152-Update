@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-from app.config import settings
+from app.core.config import settings
 from app.db.base import Base  # noqa: F401 — Single source of truth
 
 # Đăng ký pgvector adapter globaly với psycopg2

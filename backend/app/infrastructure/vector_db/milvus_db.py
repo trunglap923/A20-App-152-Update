@@ -6,7 +6,7 @@ Milvus Adapter — hỗ trợ cả 3 chế độ:
 Collection được tự động tạo khi khởi động nếu chưa tồn tại.
 """
 from pymilvus import MilvusClient, DataType
-from app.config import settings
+from app.core.config import settings
 
 # Phải khớp với model embedding: text-embedding-3-small → 1536 dims
 EMBEDDING_DIM = 1536

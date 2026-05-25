@@ -56,8 +56,8 @@ async def step_ingestion(source_type, source_url, item_id, ai_options=None, user
 async def step_media_enrichment(item_id, segments, title, source_type, source_url=None, ai_options=None, user_id=None, version_label="Phiên bản gốc"):
     from app.processors.video.audio_processing import AudioVideoProcessor
     from app.processors.chunking.semantic_chunker import SemanticChunker
-    from app.config import settings
-    from app.search.service import search_service
+    from app.core.config import settings
+    from app.services.vector_search_service import search_service
     
     upload_dir = settings.UPLOAD_DIR    
     av_processor = AudioVideoProcessor(upload_dir)
@@ -135,7 +135,7 @@ async def step_media_enrichment(item_id, segments, title, source_type, source_ur
     return lessons
 
 async def step_indexing(item_id, content, title, source_type):
-    from app.search.service import search_service
+    from app.services.vector_search_service import search_service
     from app.processors.chunking.text_chunker import TextChunker
     
     print(f"[PIPELINE][{item_id}] Bắt đầu: INDEXING (song song với Summarization)")
@@ -152,7 +152,7 @@ async def step_indexing(item_id, content, title, source_type):
 
 
 async def step_lesson_and_quiz_generation(item_id, summary_data, extractor, difficulty="intermediate", version_label="Phiên bản gốc", generate_quiz=True):
-    from app.search.service import search_service
+    from app.services.vector_search_service import search_service
 
     print(f"[PIPELINE][{item_id}] Bắt đầu: LESSON + QUIZ GENERATION")
     update_stage(item_id, "Đang lập dàn ý cấu trúc bài học...")

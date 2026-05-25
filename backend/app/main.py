@@ -12,7 +12,7 @@ from .api.routes import payment
 from .api.routes import user
 from .db.base import Base
 from .db.session import engine
-from .config import settings
+from .core.config import settings
 
 # Import tất cả models để SQLAlchemy metadata nhận diện khi create_all()
 from . import models  # noqa: F401 — registers all models with Base.metadata

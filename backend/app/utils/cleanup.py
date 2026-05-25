@@ -5,7 +5,7 @@ import os
 import anyio
 from sqlalchemy import text
 from app.db.session import engine
-from app.search.service import search_service
+from app.services.vector_search_service import search_service
 
 def _delete_sql_data(item_id: str):
     """Xóa data SQL bằng raw SQL — tối thiểu round-trip qua Supabase Transaction Pooler."""

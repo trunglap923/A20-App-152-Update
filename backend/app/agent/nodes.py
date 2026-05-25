@@ -4,7 +4,7 @@ import warnings
 # Ẩn các cảnh báo Pydantic v2 dư thừa (xảy ra khi LangChain/LangGraph serialize state)
 warnings.filterwarnings("ignore", message="PydanticSerializationUnexpectedValue")
 from app.agent.state import AgentState
-from app.search.service import search_service
+from app.services.vector_search_service import search_service
 from langchain_core.messages import AIMessage, HumanMessage
 from pydantic import BaseModel, Field
 from app.ai.prompts import PROMPT_CHAT_RAG, PROMPT_CHAT_SUMMARY
