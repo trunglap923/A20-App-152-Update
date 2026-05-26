@@ -20,7 +20,7 @@ export type AdminUserRow = {
 
 export type AuditLogRow = {
   id: string
-  at: string
+  createdAt: string
   email: string
   event: 'login' | 'register' | 'logout' | 'password_reset'
   ip: string
@@ -101,7 +101,7 @@ export const MOCK_ADMIN_USERS: AdminUserRow[] = [
 export const MOCK_AUDIT_LOGS: AuditLogRow[] = [
   {
     id: 'l1',
-    at: '2026-04-19T11:02:11',
+    createdAt: '2026-04-19T11:02:11',
     email: 'a.nexus@example.com',
     event: 'login',
     ip: '171.224.x.x',
@@ -110,7 +110,7 @@ export const MOCK_AUDIT_LOGS: AuditLogRow[] = [
   },
   {
     id: 'l2',
-    at: '2026-04-19T10:58:00',
+    createdAt: '2026-04-19T10:58:00',
     email: 'new.user@example.com',
     event: 'register',
     ip: '14.161.x.x',
@@ -119,7 +119,7 @@ export const MOCK_AUDIT_LOGS: AuditLogRow[] = [
   },
   {
     id: 'l3',
-    at: '2026-04-19T09:12:44',
+    createdAt: '2026-04-19T09:12:44',
     email: 'wrong@example.com',
     event: 'login',
     ip: '103.199.x.x',
@@ -128,7 +128,7 @@ export const MOCK_AUDIT_LOGS: AuditLogRow[] = [
   },
   {
     id: 'l4',
-    at: '2026-04-18T22:30:01',
+    createdAt: '2026-04-18T22:30:01',
     email: 'b.team@example.com',
     event: 'logout',
     ip: '58.186.x.x',
@@ -137,7 +137,7 @@ export const MOCK_AUDIT_LOGS: AuditLogRow[] = [
   },
   {
     id: 'l5',
-    at: '2026-04-18T18:00:00',
+    createdAt: '2026-04-18T18:00:00',
     email: 'c.student@example.com',
     event: 'password_reset',
     ip: '113.161.x.x',

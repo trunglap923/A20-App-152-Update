@@ -75,7 +75,7 @@ export default function AdminAuditPage() {
     return [...apiRows]
       .filter((r) => (eventFilter === 'all' ? true : r.event === eventFilter))
       .filter((r) => (resultFilter === 'all' ? true : resultFilter === 'success' ? r.success : !r.success))
-      .sort((a, b) => b.at.localeCompare(a.at))
+      .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
   }, [apiRows, eventFilter, resultFilter])
 
   useEffect(() => {
@@ -245,7 +245,7 @@ export default function AdminAuditPage() {
             ) : pagedRows.map((r) => (
               <TableRow key={r.id} className="border-b border-slate-100 transition-colors hover:bg-slate-50/70">
                 <TableCell className="whitespace-nowrap text-xs text-slate-500">
-                  {formatAuditTime(r.at)}
+                  {formatAuditTime(r.createdAt)}
                 </TableCell>
                 <TableCell className="font-medium text-slate-900">{r.email}</TableCell>
                 <TableCell className="text-slate-700">{eventLabels[r.event] ?? r.event}</TableCell>
