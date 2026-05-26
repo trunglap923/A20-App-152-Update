@@ -4,7 +4,7 @@ import { FileUpload } from '@/components/file-upload'
 import { EmptyState } from '@/components/empty-state'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useDocumentProcessing } from '@/contexts/document-processing-context'
-import { MainLayout } from '@/components/layouts/main-layout'
+// MainLayout is now provided by (main)/layout.tsx
 
 export default function Home() {
   const {
@@ -22,7 +22,7 @@ export default function Home() {
   const showContent = hasPartialContent
 
   return (
-    <MainLayout>
+    <>
       <AnimatePresence>
         {!isProcessing && !showContent && (
           <motion.div
@@ -45,6 +45,6 @@ export default function Home() {
           )}
         </AnimatePresence>
       </div>
-    </MainLayout>
+    </>
   )
 }

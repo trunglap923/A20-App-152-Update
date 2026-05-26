@@ -15,7 +15,7 @@ class VideoProcessor(BaseProcessor):
     async def process(self, source_url: str, **kwargs) -> dict:
         """Quy trình Ingestion thuần túy: Chỉ trích xuất dữ liệu thô (Transcription)."""
         import time
-        from app.workers.enrichment_pipeline import _create_transcriber, update_stage
+        from app.workers.pipeline_utils import create_transcriber, update_stage
         
         start_total = time.time()
         
@@ -46,7 +46,7 @@ class VideoProcessor(BaseProcessor):
         print(f"[2/2] Đang chuyển đổi âm thanh -> văn bản (Whisper API)...")
         update_stage(item_id, "Đang chuyển đổi giọng nói thành văn bản (Whisper API)...")
         t2 = time.time()
-        transcriber = _create_transcriber(ai_options)
+        transcriber = create_transcriber(ai_options)
         transcriber.set_context(user_id=user_id, item_id=item_id)
         transcribe_data = await transcriber.process(audio_path)
         segments = transcribe_data["segments"]

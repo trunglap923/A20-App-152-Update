@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, BookOpen, HelpCircle, GitBranch, MessageCircle, Loader2, Presentation } from 'lucide-react'
 
-import { MainLayout } from '@/components/layouts/main-layout'
+// MainLayout is now provided by (main)/layout.tsx
 import { ProcessingPipeline } from '@/components/processing-pipeline'
 import { LoadingSkeleton } from '@/components/loading-skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -89,7 +89,7 @@ export default function WorkspaceTabPage() {
   if (!mounted) return null
 
   return (
-    <MainLayout>
+    <>
       <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait">
           {processingStep === 'fetching' ? (
@@ -215,6 +215,6 @@ export default function WorkspaceTabPage() {
           )}
         </AnimatePresence>
       </div>
-    </MainLayout>
+    </>
   )
 }
