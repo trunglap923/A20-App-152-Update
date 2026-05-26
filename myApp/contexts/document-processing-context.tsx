@@ -722,7 +722,7 @@ export function DocumentProcessingProvider({ children }: { children: ReactNode }
           setSelectedFile(realId)
           activeJobFileIdRef.current = realId
           startPolling(realId)
-          router.push(`/workspace/${realId}/summary`)
+          router.push(`/workspace/${realId}?tab=summary`)
         } else {
           setProcessingStep(null)
           setActiveUploadFileName(null)
@@ -778,7 +778,7 @@ export function DocumentProcessingProvider({ children }: { children: ReactNode }
       setSelectedFile(id)
       
       if (!preventNavigation) {
-        router.push(`/workspace/${id}/summary`)
+        router.push(`/workspace/${id}?tab=summary`)
       }
       
       // Clear content cũ ngay lập tức để người dùng thấy đang chuyển sang bài mới

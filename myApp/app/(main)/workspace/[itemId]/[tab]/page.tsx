@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, BookOpen, HelpCircle, GitBranch, MessageCircle, Loader2, Presentation } from 'lucide-react'
@@ -81,9 +82,9 @@ export default function WorkspaceTabPage() {
     }
   }, [isProcessing, showContent, mounted, processingStep, router])
 
-  // Navigate to different tab by changing URL
+  // Navigate to different tab by changing URL — dùng router.replace để không stack history
   const handleTabChange = (newTab: string) => {
-    router.push(`/workspace/${itemId}/${newTab}`)
+    router.replace(`/workspace/${itemId}/${newTab}`)
   }
 
   if (!mounted) return null
@@ -130,6 +131,7 @@ export default function WorkspaceTabPage() {
                       <TabsTrigger
                         key={t.id}
                         value={t.id}
+                        asChild
                         className="
                           flex items-center gap-2 rounded-xl px-3 py-2
                           text-xs font-medium text-muted-foreground
@@ -144,8 +146,10 @@ export default function WorkspaceTabPage() {
                           sm:text-sm
                         "
                       >
-                        <t.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        <span className="hidden sm:inline">{t.label}</span>
+                        <Link href={`/workspace/${itemId}/${t.id}`} prefetch={true}>
+                          <t.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                          <span className="hidden sm:inline">{t.label}</span>
+                        </Link>
                       </TabsTrigger>
                     ))}
                   </TabsList>

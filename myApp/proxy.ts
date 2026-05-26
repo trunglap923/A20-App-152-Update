@@ -100,6 +100,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/payment/webhook/|api/webhook/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/payment/webhook/|api/webhook/|workspace/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
