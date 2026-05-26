@@ -62,7 +62,7 @@ export function UserNotificationBell() {
     void loadNotifications(true)
     const timer = window.setInterval(() => {
       void loadNotifications(false)
-    }, 6000)
+    }, 60000)
     return () => {
       window.clearInterval(timer)
     }
