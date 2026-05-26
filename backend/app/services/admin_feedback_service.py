@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app.models.admin import UserFeedback
-from app.infrastructure.supabase.auth_admin import supabase_admin_client
+from app.infrastructure.supabase.auth_admin import supabase_admin
 
-def get_all_feedbacks(db: Session) -> list:
+async def get_all_feedbacks(db: Session) -> list:
     """
     Fetch all user feedback and map with user emails from Supabase Auth.
     """
@@ -16,11 +16,12 @@ def get_all_feedbacks(db: Session) -> list:
     user_data = {}
     if user_ids:
         try:
-            auth_users = supabase_admin_client.auth.admin.list_users()
-            for u in auth_users.users:
-                name = u.user_metadata.get("full_name") or u.user_metadata.get("name") or "Unknown"
-                user_data[u.id] = {
-                    "email": u.email,
+            auth_users = await supabase_admin.list_users()
+            for u in auth_users:
+                metadata = u.get("user_metadata", {})
+                name = metadata.get("full_name") or metadata.get("name") or "Unknown"
+                user_data[u["id"]] = {
+                    "email": u.get("email"),
                     "name": name
                 }
         except Exception as e:
@@ -28,11 +29,13 @@ def get_all_feedbacks(db: Session) -> list:
 
     result = []
     for fb in feedbacks:
-        ud = user_data.get(fb.user_id, {})
+        ud = user_data.get(str(fb.user_id) if fb.user_id else None, {})
         result.append({
             "id": str(fb.id),
             "user_id": fb.user_id,
-            "content": fb.content,
+            "type": fb.type or "general",
+            "rating": fb.rating,
+            "message": fb.content,
             "status": fb.status,
             "created_at": fb.created_at.isoformat() if fb.created_at else None,
             "userEmail": ud.get("email", "Khách (Chưa đăng nhập)"),

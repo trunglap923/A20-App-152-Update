@@ -4,7 +4,7 @@ Cung cấp endpoint lấy log các lần gọi LLM, hỗ trợ lọc theo ngày.
 """
 
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -61,7 +61,7 @@ async def get_ai_monitoring_logs(
     for log in logs:
         log_responses.append(AILogResponse(
             id=str(log.id),
-            at=log.created_at.isoformat() if log.created_at else "",
+            at=log.created_at.replace(tzinfo=timezone.utc).isoformat() if log.created_at else "",
             user_id=str(log.user_id) if log.user_id else None,
             email=log.user_email or (str(log.user_id)[:8] + "..." if log.user_id else "system"),
             task=log.task_type or "",
@@ -230,7 +230,7 @@ async def get_feedback(
     """
     from app.services.admin_feedback_service import get_all_feedbacks
     try:
-        return get_all_feedbacks(db)
+        return await get_all_feedbacks(db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

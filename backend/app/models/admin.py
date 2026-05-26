@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, Boolean, DateTime, func
+from sqlalchemy import Column, String, Text, Boolean, DateTime, func, Integer
 import uuid
 from app.db.base import Base
 
@@ -7,7 +7,9 @@ class UserFeedback(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, nullable=True) # UUID string matching Auth users
-    content = Column(Text, nullable=False)
+    content = Column("message", Text, nullable=False)
+    type = Column(String, nullable=True)
+    rating = Column(Integer, nullable=True)
     status = Column(String, default="pending")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

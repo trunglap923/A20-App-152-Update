@@ -17,7 +17,12 @@ class NotificationService:
         self.email_sender = self.resend if self.resend.is_configured() else self.smtp
 
     async def get_broadcasts(self, db: Session) -> List[Dict[str, Any]]:
-        campaigns = db.query(BroadcastCampaign).order_by(desc(BroadcastCampaign.created_at)).all()
+        try:
+            campaigns = db.query(BroadcastCampaign).order_by(desc(BroadcastCampaign.created_at)).all()
+        except Exception as e:
+            db.rollback()
+            logger.warning(f"Failed to fetch broadcast campaigns: {e}")
+            return []
         return [
             {
                 "id": str(c.id),
@@ -32,7 +37,12 @@ class NotificationService:
         ]
 
     async def get_banners(self, db: Session) -> List[Dict[str, Any]]:
-        banners = db.query(Banner).order_by(desc(Banner.created_at)).all()
+        try:
+            banners = db.query(Banner).order_by(desc(Banner.created_at)).all()
+        except Exception as e:
+            db.rollback()
+            logger.warning(f"Failed to fetch banners: {e}")
+            return []
         return [
             {
                 "id": str(b.id),

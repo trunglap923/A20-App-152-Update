@@ -230,7 +230,7 @@ export default function AdminNotificationsContentPage() {
   const [broadcastBody, setBroadcastBody] = useState(
     'Xin chào {{tên_user}}, hệ thống sẽ bảo trì ngắn lúc 22:00. Cảm ơn bạn đã đồng hành cùng Nexus.'
   )
-  const [broadcastRows, setBroadcastRows] = useState<BroadcastHistory[]>(INITIAL_BROADCAST_HISTORY)
+  const [broadcastRows, setBroadcastRows] = useState<BroadcastHistory[]>([])
 
   const [placement, setPlacement] = useState<BannerPlacement>('Top bar')
   const [bannerType, setBannerType] = useState<BannerType>('Info')
@@ -240,7 +240,7 @@ export default function AdminNotificationsContentPage() {
   const todayStr = new Date().toISOString().split('T')[0];
   const [startDate, setStartDate] = useState(todayStr)
   const [endDate, setEndDate] = useState(todayStr)
-  const [banners, setBanners] = useState<BannerItem[]>(INITIAL_BANNERS)
+  const [banners, setBanners] = useState<BannerItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmittingBroadcast, setIsSubmittingBroadcast] = useState(false)
   const [isSubmittingBanner, setIsSubmittingBanner] = useState(false)
