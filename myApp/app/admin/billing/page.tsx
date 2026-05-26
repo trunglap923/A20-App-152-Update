@@ -102,7 +102,7 @@ export default function AdminBillingPage() {
         const { data: { session } } = await supabase.auth.getSession()
         const token = session?.access_token
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/billing`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/billing`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
 

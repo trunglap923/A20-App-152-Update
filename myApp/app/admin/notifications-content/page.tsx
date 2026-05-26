@@ -319,7 +319,7 @@ export default function AdminNotificationsContentPage() {
         const { data: { session } } = await supabase.auth.getSession()
         const token = session?.access_token
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/notifications`, {
           cache: 'no-store',
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
@@ -364,7 +364,7 @@ export default function AdminNotificationsContentPage() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/broadcast`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/notifications/broadcast`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -411,7 +411,7 @@ export default function AdminNotificationsContentPage() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/banner`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/notifications/banner`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -452,7 +452,7 @@ export default function AdminNotificationsContentPage() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/banner/${id}/toggle`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/notifications/banner/${id}/toggle`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -490,7 +490,7 @@ export default function AdminNotificationsContentPage() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/preview`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/notifications/preview`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -533,7 +533,7 @@ export default function AdminNotificationsContentPage() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/notifications/preview`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/notifications/preview`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

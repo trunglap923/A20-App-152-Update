@@ -40,6 +40,7 @@ class Settings:
     # Auth Settings
     SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", os.getenv("NEXT_PUBLIC_SUPABASE_URL", ""))
+    SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
     # Media Processing Settings
     FFMPEG_PATH: str = os.getenv("FFMPEG_PATH", "ffmpeg")

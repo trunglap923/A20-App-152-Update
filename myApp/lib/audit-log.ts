@@ -76,7 +76,7 @@ export async function logAuthEvent(input: LogAuthEventInput) {
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
 
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/audit`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/audit`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',

@@ -50,7 +50,7 @@ export default function EditUserModal({
             try {
                 setLoading(true)
 
-                const res = await fetch(`/api/admin/users/${user.id}`)
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${user.id}`)
                 const data = await res.json()
 
                 if (!res.ok) {
@@ -114,7 +114,7 @@ export default function EditUserModal({
             const formData = new FormData()
             formData.append('file', file)
 
-            const res = await fetch(`/api/admin/users/${userId}/avatar`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}/avatar`, {
                 method: 'POST',
                 body: formData,
             })
@@ -149,7 +149,7 @@ export default function EditUserModal({
                 setIsUploading(false)
             }
 
-            const res = await fetch(`/api/admin/users/${form.id}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${form.id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

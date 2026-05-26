@@ -98,7 +98,7 @@ export default function AdminUsersPage() {
         const { data: { session } } = await supabase.auth.getSession()
         const token = session?.access_token
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
         const data = await res.json()
@@ -155,7 +155,7 @@ export default function AdminUsersPage() {
       const { data: { session } } = await supabase.auth.getSession()
       const token = session?.access_token
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${id}/ban`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${id}/ban`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

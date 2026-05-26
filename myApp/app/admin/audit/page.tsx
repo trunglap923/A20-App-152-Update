@@ -42,7 +42,7 @@ export default function AdminAuditPage() {
         const { data: { session } } = await supabase.auth.getSession()
         const token = session?.access_token
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/audit?limit=500`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/audit?limit=500`, {
           method: 'GET',
           cache: 'no-store',
           headers: token ? { Authorization: `Bearer ${token}` } : {}
