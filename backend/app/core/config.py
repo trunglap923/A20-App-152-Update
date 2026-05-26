@@ -16,7 +16,9 @@ class Settings:
     
     # Ưu tiên sử dụng DATABASE_URL đầy đủ nếu có (cho Supabase/Production)
     DATABASE_URL: str = os.getenv("DATABASE_URL", f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}")
-    
+    # Redis Settings
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
     # Vector DB Settings
     CHROMA_DB_PATH: str = os.getenv("CHROMA_DB_PATH", "./chroma_db")
 

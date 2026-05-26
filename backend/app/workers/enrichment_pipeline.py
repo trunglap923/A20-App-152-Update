@@ -243,3 +243,49 @@ async def regenerate_mindmap_task(item_id: str, ai_options: Dict[str, Any] | Non
     with Session(engine) as session:
         session.query(KnowledgeItem).filter(KnowledgeItem.id == uuid.UUID(str(item_id))).update({"status": "done", "processing_stage": "done"})
         session.commit()
+
+
+from app.worker import celery_app
+
+@celery_app.task(bind=True, max_retries=3)
+def process_enrichment_task_sync(self, source_type: str, source_url: str, item_id: str = None, ai_options: Dict[str, Any] | None = None):
+    try:
+        return asyncio.run(process_enrichment_task(source_type, source_url, item_id, ai_options))
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)
+
+@celery_app.task(bind=True, max_retries=3)
+def process_live_recording_task_sync(self, item_id: str, full_content: str, segments: list, title: str = "Bản ghi âm trực tiếp", ai_options: Dict[str, Any] | None = None):
+    try:
+        return asyncio.run(process_live_recording_task(item_id, full_content, segments, title, ai_options))
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)
+
+@celery_app.task(bind=True, max_retries=3)
+def regenerate_lessons_task_sync(self, item_id: str, ai_options: Dict[str, Any] | None = None):
+    try:
+        return asyncio.run(regenerate_lessons_task(item_id, ai_options))
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)
+
+@celery_app.task(bind=True, max_retries=3)
+def regenerate_quiz_task_sync(self, item_id: str, difficulty: str = "intermediate", ai_options: Dict[str, Any] | None = None):
+    try:
+        return asyncio.run(regenerate_quiz_task(item_id, difficulty, ai_options))
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)
+
+@celery_app.task(bind=True, max_retries=3)
+def regenerate_summary_task_sync(self, item_id: str, ai_options: Dict[str, Any] | None = None):
+    try:
+        return asyncio.run(regenerate_summary_task(item_id, ai_options))
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)
+
+@celery_app.task(bind=True, max_retries=3)
+def regenerate_mindmap_task_sync(self, item_id: str, ai_options: Dict[str, Any] | None = None):
+    try:
+        return asyncio.run(regenerate_mindmap_task(item_id, ai_options))
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60)
+

@@ -10,11 +10,14 @@ from app.db.session import get_db
 from app.models.knowledge_items import KnowledgeItem
 from app.api import schemas
 from app.workers.enrichment_pipeline import (
-    process_enrichment_task, 
-    regenerate_summary_task,
-    regenerate_mindmap_task,
-    regenerate_lessons_task,
-    regenerate_quiz_task
+    process_enrichment_task,
+    process_live_recording_task,
+    process_enrichment_task_sync,
+    process_live_recording_task_sync,
+    regenerate_lessons_task_sync,
+    regenerate_quiz_task_sync,
+    regenerate_summary_task_sync,
+    regenerate_mindmap_task_sync
 )
 from app.api.deps import get_current_user, UserInfo
 from app.core.config import settings
@@ -114,8 +117,7 @@ async def trigger_processing(
         "stt":    {"provider": "openai",        "model": stt_model,    "api_key": stt_key},
     }
 
-    background_tasks.add_task(
-        process_enrichment_task,
+    process_enrichment_task_sync.delay(
         source_type,
         final_source_url,
         item_id,
@@ -206,7 +208,7 @@ async def trigger_regenerate_summary(
         "text": {"provider": _get_field("x-user-ai-provider") or "openai", "model": _get_field("x-user-ai-model") or "gpt-4o-mini", "api_key": _get_field("x-user-ai-key") or None},
     }
 
-    background_tasks.add_task(regenerate_summary_task, item_id, ai_options)
+    regenerate_summary_task_sync.delay(item_id, ai_options)
     return {"status": "running", "message": "Regeneration started"}
 
 @router.post("/{item_id}/regenerate-mindmap")
@@ -230,7 +232,7 @@ async def trigger_regenerate_mindmap(
         "text": {"provider": _get_field("x-user-ai-provider") or "openai", "model": _get_field("x-user-ai-model") or "gpt-4o-mini", "api_key": _get_field("x-user-ai-key") or None},
     }
 
-    background_tasks.add_task(regenerate_mindmap_task, item_id, ai_options)
+    regenerate_mindmap_task_sync.delay(item_id, ai_options)
     return {"status": "running", "message": "Regeneration started"}
 
 @router.post("/{item_id}/regenerate-lessons")
@@ -255,7 +257,7 @@ async def trigger_regenerate_lessons(
         "vision": {"provider": _get_field("x-user-vision-provider") or "openai", "model": _get_field("x-user-vision-model") or "gpt-4o-mini", "api_key": _get_field("x-user-vision-key") or None},
     }
 
-    background_tasks.add_task(regenerate_lessons_task, item_id, ai_options)
+    regenerate_lessons_task_sync.delay(item_id, ai_options)
     return {"status": "running", "message": "Regeneration started"}
 
 @router.post("/{item_id}/regenerate-quiz")
@@ -280,5 +282,5 @@ async def trigger_regenerate_quiz(
         "text": {"provider": _get_field("x-user-ai-provider") or "openai", "model": _get_field("x-user-ai-model") or "gpt-4o-mini", "api_key": _get_field("x-user-ai-key") or None},
     }
 
-    background_tasks.add_task(regenerate_quiz_task, item_id, difficulty, ai_options)
+    regenerate_quiz_task_sync.delay(item_id, difficulty, ai_options)
     return {"status": "running", "message": "Regeneration started"}

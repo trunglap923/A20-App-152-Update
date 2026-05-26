@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.knowledge_items import KnowledgeItem
 from app.api.deps import get_current_user, UserInfo
-from app.workers.enrichment_pipeline import process_live_recording_task
+from app.workers.enrichment_pipeline import process_live_recording_task_sync
 from app.core.logging import logger
 
 router = APIRouter()
@@ -210,13 +210,12 @@ async def finish_audio_session(
     }
 
     # 5. Kick off enrichment pipeline
-    background_tasks.add_task(
-        process_live_recording_task,
-        item_id=item_id,
-        full_content=full_content,
-        segments=all_segments,
-        title=title,
-        ai_options=ai_options,
+    process_live_recording_task_sync.delay(
+        item_id,
+        full_content,
+        all_segments,
+        title,
+        ai_options,
     )
 
     # 6. Dọn dẹp thư mục session
