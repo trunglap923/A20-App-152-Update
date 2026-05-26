@@ -101,6 +101,16 @@ def track_job(session: Session, item_id_str: str, job_type: str, status: str):
         ))
     session.commit()
 
+import redis
+import json
+from app.core.config import settings
+
+# Tạo client redis đồng bộ để publish event từ worker
+try:
+    redis_sync = redis.from_url(settings.REDIS_URL, decode_responses=True)
+except Exception:
+    redis_sync = None
+
 def update_stage(item_id: str, stage: str):
     try:
         with Session(engine) as session:
@@ -108,5 +118,9 @@ def update_stage(item_id: str, stage: str):
                 KnowledgeItem.id == uuid.UUID(str(item_id))
             ).update({"processing_stage": stage})
             session.commit()
+        
+        # Bắn event qua Redis Pub/Sub để frontend nhận ngay (SSE)
+        if redis_sync:
+            redis_sync.publish(f"item:{item_id}", json.dumps({"stage": stage}))
     except Exception as e:
         print(f"[STAGE] WARNING: Không thể cập nhật stage '{stage}': {e}")
