@@ -10,11 +10,14 @@ from app.models.knowledge_items import KnowledgeItem
 from app.api.deps import get_current_user, UserInfo
 from app.workers.enrichment_pipeline import process_live_recording_task_sync
 from app.core.logging import logger
+from app.core.limiter import limiter
 
 router = APIRouter()
 
 @router.post("/{session_id}/audio-chunk")
+@limiter.limit("20/minute")
 async def receive_audio_chunk(
+    request: Request,
     session_id: str,
     chunk_index: int = Form(...),
     file: UploadFile = File(...),
@@ -96,6 +99,7 @@ async def receive_audio_chunk(
 
 
 @router.post("/{session_id}/finish-audio")
+@limiter.limit("3/minute")
 async def finish_audio_session(
     session_id: str,
     background_tasks: BackgroundTasks,

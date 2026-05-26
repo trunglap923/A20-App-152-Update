@@ -24,6 +24,7 @@ from app.core.config import settings
 from app.services.vector_search_service import search_service
 from app.services.item_service import ItemService
 from app.core.logging import logger
+from app.core.limiter import limiter
 
 from app.api.routes import items_stream, items_live
 
@@ -34,6 +35,7 @@ router.include_router(items_stream.router)
 router.include_router(items_live.router)
 
 @router.post("/process", response_model=dict)
+@limiter.limit("3/minute")
 async def trigger_processing(
     request: Request,
     background_tasks: BackgroundTasks,
