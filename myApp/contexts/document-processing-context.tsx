@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { 
   uploadDocument, 
   checkItemStatus, 
@@ -45,7 +46,7 @@ type DocumentProcessingContextValue = {
     file?: File
     url?: string
   }) => Promise<void>
-  handleSelectFile: (id: string) => void
+  handleSelectFile: (id: string, preventNavigation?: boolean) => void
   handleRenameFile: (id: string, newName: string) => Promise<void>
   handleDeleteFile: (id: string) => Promise<void>
   handleRegenerate: (type: 'summary' | 'mindmap' | 'lessons' | 'quiz', options?: { difficulty?: string }) => Promise<void>
@@ -78,6 +79,8 @@ type DocumentProcessingContextValue = {
 const DocumentProcessingContext = createContext<DocumentProcessingContextValue | null>(null)
 
 export function DocumentProcessingProvider({ children }: { children: ReactNode }) {
+  const router = useRouter()
+  const pathname = usePathname()
   const [history, setHistory] = useState<UploadedFile[]>([])
   const [pendingDeletes, setPendingDeletes] = useState<Set<string>>(new Set())
   const pendingDeletesRef = useRef(pendingDeletes)
@@ -719,6 +722,7 @@ export function DocumentProcessingProvider({ children }: { children: ReactNode }
           setSelectedFile(realId)
           activeJobFileIdRef.current = realId
           startPolling(realId)
+          router.push(`/workspace/${realId}/summary`)
         } else {
           setProcessingStep(null)
           setActiveUploadFileName(null)
@@ -763,14 +767,19 @@ export function DocumentProcessingProvider({ children }: { children: ReactNode }
     activeJobFileIdRef.current = null
     setActiveTab('summary')
     setIsMobileSidebarOpen(false)
-  }, [clearPolling, resetRecording])
+    router.push('/')
+  }, [clearPolling, resetRecording, router])
 
   const handleSelectFile = useCallback(
-    async (id: string) => {
+    async (id: string, preventNavigation = false) => {
       if (selectedFile === id) return
       resetRecording()
       clearPolling()
       setSelectedFile(id)
+      
+      if (!preventNavigation) {
+        router.push(`/workspace/${id}/summary`)
+      }
       
       // Clear content cũ ngay lập tức để người dùng thấy đang chuyển sang bài mới
       setContent(null)
@@ -862,6 +871,8 @@ export function DocumentProcessingProvider({ children }: { children: ReactNode }
         
         if (selectedFile === id) {
           handleNewChat()
+        } else if (pathname.includes(`/workspace/${id}`)) {
+          router.push('/')
         }
 
         // 3. Gọi API dọn dẹp ở phía sau
@@ -942,7 +953,12 @@ export function DocumentProcessingProvider({ children }: { children: ReactNode }
     handleRegenerate,
     handleExampleClick,
     handleNewChat,
-    setActiveTab,
+    setActiveTab: (tab: string) => {
+      setActiveTab(tab)
+      if (selectedFile) {
+        router.push(`/workspace/${selectedFile}/${tab}`)
+      }
+    },
     activeTab,
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
