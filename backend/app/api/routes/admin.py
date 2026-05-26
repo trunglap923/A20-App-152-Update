@@ -216,7 +216,7 @@ async def get_billing(
     """
     from app.services.admin_billing_service import get_billing_history
     try:
-        return get_billing_history(db)
+        return await get_billing_history(db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

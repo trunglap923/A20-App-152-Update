@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app.models.payment import PaymentTransaction, Subscription, Plan
-from app.infrastructure.supabase.auth_admin import supabase_admin_client
+from app.infrastructure.supabase.auth_admin import supabase_admin
 
-def get_billing_history(db: Session) -> list:
+async def get_billing_history(db: Session) -> list:
     """
     Fetch payment transactions joined with subscriptions and plans,
     then fetch user emails from Supabase Auth to map to the results.
@@ -13,9 +13,9 @@ def get_billing_history(db: Session) -> list:
         Subscription,
         Plan
     ).outerjoin(
-        Subscription, PaymentTransaction.subscription_id == Subscription.id
+        Subscription, PaymentTransaction.id == Subscription.payment_transaction_id
     ).outerjoin(
-        Plan, Subscription.plan_id == Plan.id
+        Plan, PaymentTransaction.plan_id == Plan.id
     ).order_by(
         desc(PaymentTransaction.created_at)
     ).all()
@@ -27,10 +27,9 @@ def get_billing_history(db: Session) -> list:
     user_emails = {}
     if user_ids:
         try:
-            from gotrue.errors import AuthError
-            auth_users = supabase_admin_client.auth.admin.list_users()
-            for u in auth_users.users:
-                user_emails[u.id] = u.email
+            auth_users = await supabase_admin.list_users()
+            for u in auth_users:
+                user_emails[u["id"]] = u["email"]
         except Exception as e:
             print(f"[ADMIN_BILLING_SERVICE] Error fetching auth users: {e}")
 
@@ -40,7 +39,7 @@ def get_billing_history(db: Session) -> list:
         sub = t.Subscription
         plan = t.Plan
         
-        email = user_emails.get(pt.user_id, "Unknown")
+        email = user_emails.get(str(pt.user_id) if pt.user_id else None, "Unknown")
         description = f"Thanh toán gói {plan.name}" if plan and plan.name else "Thanh toán subscription"
         
         formatted.append({
