@@ -2,10 +2,10 @@
 
 > Biến mọi video, PDF, audio thành bài học có cấu trúc, tóm tắt, quiz và sơ đồ tư duy — chỉ trong vài phút.
 
-🔗 **Link liên kết swagger**: https://nexusai-bh1p.onrender.com/docs
-🔗 **Live URL**: https://a20-app-152.vercel.app
-📺 **Video Demo**: https://youtu.be/4k2dfErOcMM
-📊 **Pitch Deck**: https://docs.google.com/presentation/d/1y77cwbzRdDqAeAoP2gryyc_5NVb1Pbx6wrlWVOfbwDc/edit?usp=sharing
+🔗 **Link liên kết swagger**: https://nexusai-bh1p.onrender.com/docs<br>
+🔗 **Live URL**: https://a20-app-152.vercel.app<br>
+📺 **Video Demo**: https://youtu.be/4k2dfErOcMM<br>
+📊 **Pitch Deck**: https://docs.google.com/presentation/d/1y77cwbzRdDqAeAoP2gryyc_5NVb1Pbx6wrlWVOfbwDc/edit?usp=sharing<br>
 🏗️ **Architecture**: Đọc [SYSTEM_WORKFLOW.md](./SYSTEM_WORKFLOW.md) để xem phân tích chi tiết.
 
 ---
