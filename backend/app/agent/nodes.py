@@ -34,6 +34,26 @@ async def retrieve_node(state: AgentState) -> dict:
         item_id=item_id
     )
     
+    # --- GRAPHRAG: Truy xuất ngữ cảnh Đồ thị ---
+    try:
+        from app.services.graph_service import graph_service
+        
+        # Lấy cấu hình LLM từ state
+        llm = state.get("llm")
+        # Giả lập ai_options từ llm (thường thì nên truyền qua state)
+        ai_options = {}
+        if hasattr(llm, "model_name"):
+            ai_options = {"text": {"model": llm.model_name}}
+            
+        graph_context = await graph_service.query_local_neighborhood(latest_message, ai_options)
+        
+        if graph_context:
+            print("🧠 [AGENT] 👉 Đã tìm thấy ngữ cảnh từ Knowledge Graph.")
+            docs.insert(0, graph_context) # Ưu tiên Graph Context lên đầu
+    except Exception as e:
+        print(f"🧠 [AGENT] ⚠ Lỗi truy xuất Graph Context: {e}")
+    # ---------------------------------------------
+    
     return {"documents": docs}
 
 async def analyze_intent_node(state: AgentState, config: RunnableConfig) -> dict:

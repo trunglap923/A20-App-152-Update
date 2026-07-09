@@ -22,6 +22,11 @@ class Settings:
     # Vector DB Settings
     CHROMA_DB_PATH: str = os.getenv("CHROMA_DB_PATH", "./chroma_db")
 
+    # Neo4j Graph DB Settings
+    NEO4J_URI: str = os.getenv("NEO4J_URI", "")
+    NEO4J_USERNAME: str = os.getenv("NEO4J_USERNAME", "neo4j")
+    NEO4J_PASSWORD: str = os.getenv("NEO4J_PASSWORD", "")
+
     # Milvus Settings
     # Milvus Lite (local file): để URI dạng "./milvus.db" (mặc định)
     # Milvus Standalone/Cloud: để URI dạng "http://localhost:19530" hoặc "https://<endpoint>"

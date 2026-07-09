@@ -144,6 +144,29 @@ async def step_indexing(item_id, content, title, source_type):
 
     text_chunker = TextChunker()
     chunk_data = await text_chunker.process(content)
+    
+    # --- GRAPHRAG: Trích xuất Đồ thị Tri thức ---
+    try:
+        from app.services.graph_service import graph_service
+        update_stage(item_id, "Đang trích xuất Đồ thị Tri thức (Knowledge Graph)...")
+        
+        # Để tránh spam rate limit LLM, ta chạy đồng thời tối đa 5 chunks một lúc
+        semaphore = asyncio.Semaphore(5)
+        
+        # Nếu muốn truyền ai_options từ enrichment_pipeline xuống đây thì cần bổ sung tham số.
+        # Ở đây dùng tham số mặc định
+        ai_options = {} 
+        
+        async def _extract(idx, chunk_text):
+            async with semaphore:
+                await graph_service.extract_and_save_graph(chunk_text, item_id, idx, ai_options)
+
+        tasks = [_extract(i, txt) for i, txt in enumerate(chunk_data["chunks"])]
+        await asyncio.gather(*tasks)
+    except Exception as e:
+        print(f"[PIPELINE][{item_id}] ⚠ Lỗi trích xuất Knowledge Graph: {e}")
+    # ---------------------------------------------
+    
     await search_service.index_document(item_id, chunks=chunk_data["chunks"], metadata={"title": title, "source_type": source_type})
     with Session(engine) as session: track_job(session, item_id, "ingestion", "done")
 

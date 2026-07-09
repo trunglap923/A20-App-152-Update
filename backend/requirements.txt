@@ -30,6 +30,24 @@ moviepy>=1.0.3
 librosa>=0.10.0
 soundfile>=0.12.0
 langchain-community>=0.4.1
+alembic>=1.13.0
+psycopg2-binary>=2.9.0
+chromadb>=0.4.0
+pymilvus>=2.4.0
+# Pin setuptools: pymilvus requires >=78.1.1, torch 2.11.0 requires <82
+setuptools>=78.1.1,<82
+yt-dlp>=2023.0.0
+youtube-transcript-api>=0.6.0
+python-multipart>=0.0.20
+pgvector>=0.4.2
+PyMuPDF>=1.23.0
+langchain-google-genai>=0.1.0
+openai-whisper>=20250625
+faster-whisper>=1.0.0
+moviepy>=1.0.3
+librosa>=0.10.0
+soundfile>=0.12.0
+langchain-community>=0.4.1
 
 # --- Agentic RAG Stack ---
 langchain-milvus>=0.1.7
@@ -38,6 +56,8 @@ nltk>=3.9.1
 langgraph>=0.2.0
 langchain-huggingface>=0.1.0
 ddgs>=9.14.0
+neo4j>=5.20.0
+langchain-neo4j>=0.1.0
 beautifulsoup4>=4.12.0
 tf-keras
 tavily-python

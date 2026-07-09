@@ -1,4 +1,5 @@
 import os
+import ssl
 from celery import Celery
 from app.core.config import settings
 
@@ -11,13 +12,20 @@ celery_app = Celery(
 )
 
 # Cấu hình tối ưu cho AI Tasks (thường chạy lâu)
-celery_app.conf.update(
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="Asia/Ho_Chi_Minh",
-    enable_utc=True,
-    task_acks_late=True, # Đảm bảo task không bị mất nếu worker crash giữa chừng
-    worker_prefetch_multiplier=1, # Mỗi worker chỉ lấy 1 task tại 1 thời điểm (tránh ôm task video nặng)
-    task_time_limit=3600, # Giới hạn tối đa 1 tiếng cho 1 task (vd: video dài)
-)
+celery_config = {
+    "task_serializer": "json",
+    "accept_content": ["json"],
+    "result_serializer": "json",
+    "timezone": "Asia/Ho_Chi_Minh",
+    "enable_utc": True,
+    "task_acks_late": True,
+    "worker_prefetch_multiplier": 1,
+    "task_time_limit": 3600,
+}
+
+# Nếu dùng Upstash (rediss://), bắt buộc tắt xác thực chứng chỉ SSL cứng ngắc của Celery
+if settings.REDIS_URL.startswith("rediss://"):
+    celery_config["broker_use_ssl"] = {"ssl_cert_reqs": ssl.CERT_NONE}
+    celery_config["redis_backend_use_ssl"] = {"ssl_cert_reqs": ssl.CERT_NONE}
+
+celery_app.conf.update(**celery_config)

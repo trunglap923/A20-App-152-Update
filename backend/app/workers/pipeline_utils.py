@@ -107,7 +107,10 @@ from app.core.config import settings
 
 # Tạo client redis đồng bộ để publish event từ worker
 try:
-    redis_sync = redis.from_url(settings.REDIS_URL, decode_responses=True)
+    redis_kwargs = {"decode_responses": True}
+    if settings.REDIS_URL.startswith("rediss://"):
+        redis_kwargs["ssl_cert_reqs"] = "none"
+    redis_sync = redis.from_url(settings.REDIS_URL, **redis_kwargs)
 except Exception:
     redis_sync = None
 

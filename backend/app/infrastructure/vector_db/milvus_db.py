@@ -19,6 +19,10 @@ class MilvusAdapter:
         # Mặc định dùng tên mới cho Phase 1 để tránh xung đột dữ liệu cũ
         self._collection = settings.MILVUS_COLLECTION or "insight_agentic"
         self.client: MilvusClient | None = None
+        
+        if not settings.USE_MILVUS_FOR_SEARCH:
+            print("[MILVUS] ⚠ Milvus is disabled via USE_MILVUS_FOR_SEARCH=false. Bypassing connection.")
+            return
         try:
             kwargs: dict = {"uri": settings.MILVUS_URI}
             if settings.MILVUS_TOKEN:
