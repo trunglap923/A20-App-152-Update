@@ -49,14 +49,14 @@ class GraphService:
 Trích xuất danh sách các "nodes" (Thực thể: Nhân vật, Tổ chức, Địa điểm, Khái niệm quan trọng) và "edges" (Mối quan hệ giữa chúng).
 
 Yêu cầu trả về đúng định dạng JSON sau, không có markdown hay bất kỳ chữ nào khác:
-{
+{{
   "nodes": [
-    {"id": "Tên thực thể (viết hoa chuẩn)", "label": "Phân loại (vd: PERSON, ORGANIZATION, CONCEPT...)", "description": "Mô tả ngắn gọn"}
+    {{"id": "Tên thực thể (viết hoa chuẩn)", "label": "Phân loại (vd: PERSON, ORGANIZATION, CONCEPT...)", "description": "Mô tả ngắn gọn"}}
   ],
   "edges": [
-    {"source": "Tên thực thể gốc", "target": "Tên thực thể đích", "type": "Tên mối quan hệ (vd: FOUNDED, WORKED_AT, RELATED_TO)"}
+    {{"source": "Tên thực thể gốc", "target": "Tên thực thể đích", "type": "Tên mối quan hệ (vd: FOUNDED, WORKED_AT, RELATED_TO)"}}
   ]
-}
+}}
 """),
             ("user", "Đoạn văn bản:\n{text}")
         ])
@@ -100,12 +100,12 @@ Yêu cầu trả về đúng định dạng JSON sau, không có markdown hay b�
                 
                 if not node_id: continue
                 
-                # Cypher query để tạo hoặc cập nhật Node (MERGE tránh trùng lặp)
-                # Chú ý: Label trong cypher không thể truyền param trực tiếp, phải format chuỗi (cẩn thận injection)
+                # Cypher query để tạo hoặc cập nhật Node (MERGE tránh trùng lặp TRONG CÙNG 1 TÀI LIỆU)
+                # Chú ý: Dùng item_id làm part của định danh để tách biệt các file
                 safe_label = "".join(c for c in label if c.isalnum() or c == "_")
                 query = f"""
-                MERGE (n:`{safe_label}` {{name: $name}})
-                ON CREATE SET n.description = $desc, n.item_id = $item_id
+                MERGE (n:`{safe_label}` {{name: $name, item_id: $item_id}})
+                ON CREATE SET n.description = $desc
                 ON MATCH SET n.description = coalesce(n.description, "") + " | " + $desc
                 """
                 session.run(query, name=node_id, desc=desc, item_id=item_id)
@@ -120,16 +120,15 @@ Yêu cầu trả về đúng định dạng JSON sau, không có markdown hay b�
                 
                 safe_rel = "".join(c for c in rel_type if c.isalnum() or c == "_")
                 query = f"""
-                MATCH (a {{name: $source}})
-                MATCH (b {{name: $target}})
+                MATCH (a {{name: $source, item_id: $item_id}})
+                MATCH (b {{name: $target, item_id: $item_id}})
                 MERGE (a)-[r:`{safe_rel}`]->(b)
-                ON CREATE SET r.item_id = $item_id
                 """
                 session.run(query, source=source, target=target, item_id=item_id)
                 
         logger.info(f"[GraphRAG] Đã lưu {len(nodes)} nodes và {len(edges)} edges vào Neo4j.")
 
-    async def query_local_neighborhood(self, question: str, ai_options: dict) -> str:
+    async def query_local_neighborhood(self, question: str, item_id: str, ai_options: dict) -> str:
         """
         Trích xuất Entity từ câu hỏi, tìm kiếm xung quanh Entity đó trong Neo4j (độ sâu 1-2).
         Trả về dưới dạng chuỗi Text để nối vào Context.
@@ -164,14 +163,14 @@ Yêu cầu trả về đúng định dạng JSON sau, không có markdown hay b�
         graph_context = []
         with self.driver.session() as session:
             for entity in entities:
-                # Tìm Node có name gần giống, lấy các Node lân cận (depth=1)
+                # Tìm Node có name gần giống, lấy các Node lân cận (depth=1), và CHỈ LẤY của item_id này
                 query = """
                 MATCH (n)-[r]-(m)
-                WHERE toLower(n.name) CONTAINS toLower($entity)
+                WHERE toLower(n.name) CONTAINS toLower($entity) AND n.item_id = $item_id
                 RETURN n.name AS source, type(r) AS relation, m.name AS target
-                LIMIT 15
+                LIMIT 50
                 """
-                results = session.run(query, entity=entity)
+                results = session.run(query, entity=entity, item_id=item_id)
                 for record in results:
                     graph_context.append(f"[{record['source']}] --({record['relation']})--> [{record['target']}]")
         

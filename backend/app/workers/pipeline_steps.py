@@ -36,7 +36,8 @@ async def step_ingestion(source_type, source_url, item_id, ai_options=None, user
         item_id=item_id
     )
     
-    raw_content = extracted_data.get("content", "")
+    raw_content = extracted_data.get("content", "").replace("\x00", "")
+    extracted_data["content"] = raw_content
     with Session(engine) as session:
         row = session.query(KnowledgeItem).filter(KnowledgeItem.id == uuid.UUID(str(item_id))).first()
         if row:

@@ -68,9 +68,11 @@ async def process_enrichment_task(source_type: str, source_url: str, item_id: st
         with Session(engine) as session:
             track_job(session, item_id, "lessons_generation", "done")
             session.query(KnowledgeItem).filter(KnowledgeItem.id == uuid.UUID(item_id)).update({
-                "status": "done", "processing_stage": "done"
+                "status": "done"
             })
             session.commit()
+        from app.workers.pipeline_utils import update_stage
+        update_stage(item_id, "Hoàn tất")
     finally:
         if source_url and not source_url.startswith("http"):
             import os
@@ -133,9 +135,11 @@ async def process_live_recording_task(
     with Session(engine) as session:
         track_job(session, item_id, "lessons_generation", "done")
         session.query(KnowledgeItem).filter(KnowledgeItem.id == uuid.UUID(item_id)).update({
-            "status": "done", "processing_stage": "done"
+            "status": "done"
         })
         session.commit()
+    from app.workers.pipeline_utils import update_stage
+    update_stage(item_id, "Hoàn tất")
 
     if user_id_str:
         from app.services.credit_service import deduct_total_pipeline_cost
@@ -181,8 +185,10 @@ async def regenerate_lessons_task(item_id: str, ai_options: Dict[str, Any] | Non
         lessons = await step_lesson_and_quiz_generation(item_id, summary_data, extractor, version_label=version_label, generate_quiz=False)
 
     with Session(engine) as session:
-        session.query(KnowledgeItem).filter(KnowledgeItem.id == uuid.UUID(item_id)).update({"status": "done", "processing_stage": "done"})
+        session.query(KnowledgeItem).filter(KnowledgeItem.id == uuid.UUID(item_id)).update({"status": "done"})
         session.commit()
+    from app.workers.pipeline_utils import update_stage
+    update_stage(item_id, "Hoàn tất")
     logger.info(f"[REGENERATE][{item_id}] HOÀN TẤT tạo lại Lessons & Quizzes (version: {version_label})")
 
 async def regenerate_quiz_task(item_id: str, difficulty: str = "intermediate", ai_options: Dict[str, Any] | None = None):

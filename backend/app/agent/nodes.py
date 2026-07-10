@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", message="PydanticSerializationUnexpectedValue"
 class GradeResult(BaseModel):
     """Cấu trúc dữ liệu cho kết quả đánh giá tài liệu."""
     is_relevant: str = Field(description="Nhập 'yes' nếu tài liệu chứa ĐẦY ĐỦ và CHI TIẾT thông tin để trả lời. Nhập 'no' nếu tài liệu thiếu ý, quá cũ hoặc chỉ nói chung chung.")
-    is_on_topic: str = Field(description="LUÔN nhập 'yes' cho mọi câu hỏi về kiến thức, học tập, AI hoặc tóm tắt. CHỈ nhập 'no' khi người dùng hỏi về: bóng đá, showbiz, chính trị, hoặc tin tức lá cải.")
+    is_on_topic: str = Field(description="Mặc định là 'yes'. CHỈ nhập 'no' khi người dùng cố tình hỏi về: bóng đá, showbiz, chính trị, hoặc tin tức lá cải.")
 
 async def retrieve_node(state: AgentState) -> dict:
     """
@@ -45,7 +45,7 @@ async def retrieve_node(state: AgentState) -> dict:
         if hasattr(llm, "model_name"):
             ai_options = {"text": {"model": llm.model_name}}
             
-        graph_context = await graph_service.query_local_neighborhood(latest_message, ai_options)
+        graph_context = await graph_service.query_local_neighborhood(latest_message, item_id, ai_options)
         
         if graph_context:
             print("🧠 [AGENT] 👉 Đã tìm thấy ngữ cảnh từ Knowledge Graph.")
@@ -108,10 +108,11 @@ async def grade_node(state: AgentState, config: RunnableConfig) -> dict:
     grader_llm = llm.with_structured_output(GradeResult)
     
     grade_prompt = f"""Bạn là một giám khảo AI.
-    Nhiệm vụ 1: Kiểm tra xem câu hỏi có thuộc chủ đề CẤM (showbiz, chính trị, thể thao) không? Nếu là câu hỏi học tập, BẮT BUỘC chọn is_on_topic='yes'.
-    Nhiệm vụ 2: Đánh giá xem tài liệu có ĐỦ thông tin để trả lời câu hỏi này một cách sâu sắc không? 
+    Nhiệm vụ 1: Đánh giá is_on_topic. Mặc định LUÔN LÀ 'yes'. Bạn CHỈ chọn 'no' nếu câu hỏi HỎI VỀ showbiz, chính trị, thể thao, hoặc hoàn toàn vô nghĩa. Các câu hỏi về công nghệ, hệ thống, kỹ thuật, đời sống vẫn là 'yes'.
+    Nhiệm vụ 2: Đánh giá is_relevant. Tài liệu có thông tin liên quan để trả lời câu hỏi này không? 
     - Nếu câu hỏi hỏi về "thực tế/hiện nay" mà tài liệu chỉ có lý thuyết cũ -> is_relevant='no'.
-    - Nếu tài liệu chỉ nhắc tên mà không giải thích -> is_relevant='no'.
+    - Nếu tài liệu không chứa thông tin gì để trả lời câu hỏi -> is_relevant='no'.
+    - Mặc định nếu có thông tin liên quan, dù ít, hãy chọn 'yes'.
     
     Tài liệu: \n{docs}\n
     Câu hỏi: {question}
